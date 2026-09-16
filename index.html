@@ -33,7 +33,6 @@
         <span class="badge-accent">UNIMINUTO</span>
         <span class="badge-title">VirtuXperience 3D</span>
       </div>
-      <div class="hud-tagline">Campus Transversal de Aprendizaje Inmersivo</div>
     </div>
 
     <!-- Indicador de Navegación Rápida de Líneas Transversales -->
@@ -60,7 +59,7 @@
       </button>
       <button class="dome-quick-btn" data-dome="5" data-code="actividaidea" title="Activa tu Idea (Atajo: 5)">
         <span class="dome-icon">💡</span>
-        <span class="dome-label">Activa Tu Idea</span>
+        <span class="dome-label">Activa Idea</span>
       </button>
       <button class="dome-quick-btn" data-dome="6" data-code="latidosocial" title="Latido Social (Atajo: 6)">
         <span class="dome-icon">❤️</span>
@@ -86,7 +85,7 @@
           <span>📊</span> Competencias
         </button>
         <button id="btn-open-ai" class="hud-btn-icon hud-btn-ai" title="Tutor IA Pedagógico VirtuMentor" aria-label="Abrir VirtuMentor IA">
-          <span class="ai-sparkle">✨</span> VirtuMentor IA
+          <span class="ai-sparkle">✨</span> VirtuMentor
         </button>
         <button id="btn-accessibility" class="hud-btn-icon" title="Configuración de Accesibilidad DUA" aria-label="Opciones de accesibilidad DUA">
           <span>♿</span> DUA
@@ -101,20 +100,23 @@
   <!-- Minimapa Holográfico y Estado de Ubicación -->
   <aside class="hud-minimap-panel" aria-label="Minimapa de navegación">
     <div class="minimap-header">
-      <span class="minimap-title" id="current-zone-name">Ágora Central UNIMINUTO</span>
-      <span class="coordinates" id="cam-coords">X: 0 | Z: 0</span>
+      <div class="minimap-title-wrap">
+        <span class="minimap-title" id="current-zone-name">Ágora Central UNIMINUTO</span>
+        <span class="coordinates" id="cam-coords">X: 0 | Z: 0</span>
+      </div>
+      <button id="btn-minimize-minimap" class="btn-sm-ghost" title="Minimizar mapa" aria-label="Minimizar mapa">_</button>
     </div>
     <div class="minimap-canvas-wrapper">
-      <canvas id="minimap-canvas" width="180" height="180"></canvas>
-      <div class="minimap-legend">Clic en un domo para teletransportarte</div>
+      <canvas id="minimap-canvas" width="150" height="150"></canvas>
+      <div class="minimap-legend">Clic para teletransporte</div>
     </div>
   </aside>
 
   <!-- Misiones y Objetivos Activos (Quest Tracker) -->
   <aside class="hud-quest-tracker" aria-label="Bitácora de Misiones">
     <div class="quest-header">
-      <span class="quest-tag">MISIÓN PRINCIPAL</span>
-      <button id="btn-minimize-quests" class="btn-sm-ghost" aria-label="Minimizar misiones">_</button>
+      <div class="quest-tag">🎯 MISIÓN PRINCIPAL</div>
+      <button id="btn-minimize-quests" class="btn-sm-ghost" title="Minimizar/Expandir misiones" aria-label="Minimizar misiones">_</button>
     </div>
     <h3 class="quest-title" id="quest-title">Restauración del Núcleo Transversal</h3>
     <p class="quest-desc" id="quest-desc">Explora los 6 Domos Temáticos, interactúa con los Mentores Holográficos y completa los retos prácticos para activar los núcleos de competencia.</p>

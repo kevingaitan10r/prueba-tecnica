@@ -190,6 +190,16 @@ class App {
       });
     }
 
+    // Minimizar / maximizar minimapa
+    const btnMinMap = document.getElementById('btn-minimize-minimap');
+    const minimapPanel = document.querySelector('.hud-minimap-panel');
+    if (btnMinMap && minimapPanel) {
+      btnMinMap.addEventListener('click', () => {
+        minimapPanel.classList.toggle('minimized');
+        btnMinMap.textContent = minimapPanel.classList.contains('minimized') ? '+' : '_';
+      });
+    }
+
     // Iniciar sonido ambiental al primer clic en la pantalla (política de navegadores)
     window.addEventListener('click', () => {
       this.audioSystem.startAmbientDrone();

@@ -38,32 +38,33 @@
   background: rgba(232, 168, 0, 0.15);
 }
 
-/* HUD Superior */
+/* ==========================================================================
+   HUD Superior Unificado (Top Navigation & Status Bar)
+   ========================================================================== */
 .hud-top {
   position: fixed;
-  top: 16px;
-  left: 16px;
-  right: 16px;
-  z-index: 60;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  z-index: 80;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  pointer-events: none;
+  padding: 0 18px;
+  gap: 12px;
+  background: rgba(6, 9, 19, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
-.hud-top > * {
-  pointer-events: auto;
-}
-
+/* Brand UNIMINUTO compacto */
 .hud-brand {
-  background: var(--bg-surface);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--border-glass);
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .uniminuto-badge {
@@ -76,47 +77,54 @@
   background: var(--uniminuto-gold);
   color: #0b0f19;
   font-weight: 800;
-  font-size: 0.72rem;
-  padding: 2px 7px;
+  font-size: 0.7rem;
+  padding: 3px 7px;
   border-radius: 4px;
   letter-spacing: 0.05em;
+  line-height: 1;
 }
 
 .badge-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   letter-spacing: -0.01em;
-  background: linear-gradient(90deg, #fff, #93c5fd);
+  background: linear-gradient(90deg, #ffffff, #93c5fd);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  white-space: nowrap;
 }
 
 .hud-tagline {
-  font-size: 0.72rem;
-  color: var(--text-muted);
+  display: none; /* Oculto en HUD compacto para máxima legibilidad */
 }
 
 /* Selector Rápido de Domos Transversales */
 .hud-transversal-selector {
   display: flex;
   align-items: center;
-  background: var(--bg-surface);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-full);
-  padding: 4px 8px;
-  gap: 4px;
+  padding: 3px 6px;
+  gap: 3px;
+  flex-shrink: 1;
+  overflow-x: auto;
 }
 
 .dome-quick-btn {
   background: transparent;
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   font-weight: 600;
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: var(--radius-full);
   border: 1px solid transparent;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
 }
 
 .dome-quick-btn:hover {
@@ -125,160 +133,174 @@
 }
 
 .dome-quick-btn.active {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.16);
   color: #fff;
   border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.12);
 }
 
-/* User Status & XP */
+/* User Status & Acciones (Derecha) */
 .hud-user-status {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .xp-pill {
-  background: var(--bg-surface);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-full);
-  padding: 6px 14px;
+  padding: 4px 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .xp-icon {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: var(--uniminuto-gold);
-  filter: drop-shadow(0 0 6px var(--uniminuto-gold));
 }
 
 .xp-meta {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  min-width: 80px;
+  gap: 2px;
+  min-width: 60px;
 }
 
 .xp-text {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #fff;
+  line-height: 1;
 }
 
 .xp-bar-track {
   width: 100%;
-  height: 5px;
+  height: 4px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .xp-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #e8a800, #f59e0b);
-  border-radius: 3px;
+  border-radius: 2px;
   transition: width 0.4s ease;
 }
 
 .user-rank {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: #38bdf8;
   background: rgba(56, 189, 248, 0.12);
-  padding: 2px 8px;
-  border-radius: 6px;
+  padding: 2px 7px;
+  border-radius: 5px;
   border: 1px solid rgba(56, 189, 248, 0.25);
+  white-space: nowrap;
 }
 
 .hud-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .hud-btn-icon {
-  background: var(--bg-surface);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--text-main);
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 8px 14px;
-  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
 }
 
 .hud-btn-icon:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: var(--border-glass-hover);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
   transform: translateY(-1px);
 }
 
 .hud-btn-ai {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(59, 130, 246, 0.25));
-  border-color: rgba(139, 92, 246, 0.4);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(59, 130, 246, 0.3));
+  border-color: rgba(139, 92, 246, 0.45);
 }
 
 .hud-btn-ai:hover {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.45), rgba(59, 130, 246, 0.45));
-  box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(59, 130, 246, 0.5));
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.4);
 }
 
 .ai-sparkle {
   color: #c084fc;
-  animation: pulseSparkle 2s infinite ease-in-out;
 }
 
-@keyframes pulseSparkle {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.25); opacity: 1; }
-}
-
-/* Minimapa Holográfico */
+/* ==========================================================================
+   Minimapa Holográfico Compacto (Superior Derecho)
+   ========================================================================== */
 .hud-minimap-panel {
   position: fixed;
-  top: 88px;
-  right: 20px;
-  z-index: 55;
+  top: 68px;
+  right: 18px;
+  z-index: 60;
   background: var(--bg-surface);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(18px);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-md);
-  padding: 12px;
+  padding: 10px;
   box-shadow: var(--shadow-glass);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  transition: var(--transition-smooth);
+}
+
+.hud-minimap-panel.minimized .minimap-canvas-wrapper,
+.hud-minimap-panel.minimized .minimap-legend {
+  display: none;
 }
 
 .minimap-header {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding-bottom: 6px;
+  padding-bottom: 5px;
+  gap: 10px;
+}
+
+.minimap-title-wrap {
+  display: flex;
+  flex-direction: column;
 }
 
 .minimap-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: #fff;
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .coordinates {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   color: var(--text-dim);
 }
 
 .minimap-canvas-wrapper {
   position: relative;
-  width: 180px;
-  height: 180px;
-  background: rgba(6, 9, 19, 0.9);
+  width: 150px;
+  height: 150px;
+  background: rgba(6, 9, 19, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -292,28 +314,36 @@
 }
 
 .minimap-legend {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: var(--text-dim);
   text-align: center;
-  margin-top: 4px;
 }
 
-/* Misiones y Objetivos Activos (Quest Tracker) */
+/* ==========================================================================
+   Misiones y Objetivos Activos (Quest Tracker - Superior Izquierdo)
+   ========================================================================== */
 .hud-quest-tracker {
   position: fixed;
-  top: 88px;
-  left: 20px;
-  z-index: 55;
-  width: 310px;
+  top: 68px;
+  left: 18px;
+  z-index: 60;
+  width: 270px;
   background: var(--bg-surface);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(18px);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-md);
-  padding: 14px 18px;
+  padding: 12px 14px;
   box-shadow: var(--shadow-glass);
+  transition: var(--transition-smooth);
+}
+
+.hud-quest-tracker.minimized {
+  width: auto;
+  padding: 8px 14px;
 }
 
 .hud-quest-tracker.minimized .quest-desc,
+.hud-quest-tracker.minimized .quest-title,
 .hud-quest-tracker.minimized .quest-progress-list {
   display: none;
 }
@@ -323,40 +353,51 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 4px;
+  gap: 8px;
 }
 
 .quest-tag {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: var(--uniminuto-gold);
+  white-space: nowrap;
 }
 
 .btn-sm-ghost {
-  background: transparent;
-  color: var(--text-dim);
-  font-size: 0.8rem;
-  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 22px;
+  height: 22px;
+  padding: 0;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .btn-sm-ghost:hover {
   color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .quest-title {
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 700;
   margin-bottom: 4px;
+  line-height: 1.3;
 }
 
 .quest-desc {
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
-  line-height: 1.4;
-  margin-bottom: 12px;
+  line-height: 1.35;
+  margin-bottom: 10px;
 }
 
 .quest-progress-list {
