@@ -1,0 +1,36 @@
+{
+  "name": "virtuxperience-uniminuto",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mundo Virtual Inmersivo Educativo para UNIMINUTO VirtuXperience - Virtual Experience Engineering SAS",
+  "main": "electron/main.cjs",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron:dev": "ELECTRON_DEV=true electron .",
+    "electron": "electron .",
+    "start": "npm run dev",
+    "app": "npm run build && electron ."
+  },
+  "keywords": [
+    "uniminuto",
+    "virtuxperience",
+    "threejs",
+    "webgl",
+    "inmersive-learning",
+    "dua",
+    "ai-tutor",
+    "gamification"
+  ],
+  "author": "Virtual Experience Engineering SAS & UNIMINUTO",
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "vite": "^6.0.0"
+  }
+}

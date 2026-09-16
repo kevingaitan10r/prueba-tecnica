@@ -1,0 +1,607 @@
+/* ==========================================================================
+   UNIMINUTO VirtuXperience - HUD, Minimap & In-Game Interfaces
+   ========================================================================== */
+
+/* Retícula central (Crosshair) */
+.crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 50;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crosshair-dot {
+  width: 4px;
+  height: 4px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+}
+
+.crosshair-ring {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.crosshair.interactive .crosshair-ring {
+  transform: scale(1.4);
+  border-color: var(--uniminuto-gold);
+  background: rgba(232, 168, 0, 0.15);
+}
+
+/* HUD Superior */
+.hud-top {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  pointer-events: none;
+}
+
+.hud-top > * {
+  pointer-events: auto;
+}
+
+.hud-brand {
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.uniminuto-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-accent {
+  background: var(--uniminuto-gold);
+  color: #0b0f19;
+  font-weight: 800;
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.badge-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  background: linear-gradient(90deg, #fff, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hud-tagline {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Selector Rápido de Domos Transversales */
+.hud-transversal-selector {
+  display: flex;
+  align-items: center;
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-full);
+  padding: 4px 8px;
+  gap: 4px;
+}
+
+.dome-quick-btn {
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+}
+
+.dome-quick-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dome-quick-btn.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
+}
+
+/* User Status & XP */
+.hud-user-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.xp-pill {
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.xp-icon {
+  font-size: 1.2rem;
+  color: var(--uniminuto-gold);
+  filter: drop-shadow(0 0 6px var(--uniminuto-gold));
+}
+
+.xp-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 80px;
+}
+
+.xp-text {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.xp-bar-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e8a800, #f59e0b);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.user-rank {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-btn-icon {
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  color: var(--text-main);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+}
+
+.hud-btn-icon:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--border-glass-hover);
+  transform: translateY(-1px);
+}
+
+.hud-btn-ai {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(59, 130, 246, 0.25));
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.hud-btn-ai:hover {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.45), rgba(59, 130, 246, 0.45));
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
+}
+
+.ai-sparkle {
+  color: #c084fc;
+  animation: pulseSparkle 2s infinite ease-in-out;
+}
+
+@keyframes pulseSparkle {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.25); opacity: 1; }
+}
+
+/* Minimapa Holográfico */
+.hud-minimap-panel {
+  position: fixed;
+  top: 88px;
+  right: 20px;
+  z-index: 55;
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-shadow: var(--shadow-glass);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.minimap-header {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
+}
+
+.minimap-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #fff;
+}
+
+.coordinates {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+
+.minimap-canvas-wrapper {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  background: rgba(6, 9, 19, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+#minimap-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.minimap-legend {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* Misiones y Objetivos Activos (Quest Tracker) */
+.hud-quest-tracker {
+  position: fixed;
+  top: 88px;
+  left: 20px;
+  z-index: 55;
+  width: 310px;
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-glass);
+}
+
+.hud-quest-tracker.minimized .quest-desc,
+.hud-quest-tracker.minimized .quest-progress-list {
+  display: none;
+}
+
+.quest-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.quest-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--uniminuto-gold);
+}
+
+.btn-sm-ghost {
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.btn-sm-ghost:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.quest-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.quest-desc {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.quest-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quest-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.quest-item.completed {
+  color: #10b981;
+}
+
+.quest-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+}
+
+.quest-item.completed .quest-check {
+  background: #10b981;
+  border-color: #10b981;
+  color: #fff;
+}
+
+/* Prompt de Interacción Contextual */
+.interaction-prompt {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  background: var(--bg-surface-elevated);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--uniminuto-gold);
+  box-shadow: 0 0 20px rgba(232, 168, 0, 0.35);
+  border-radius: var(--radius-full);
+  padding: 10px 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: promptBob 1.5s infinite ease-in-out;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.interaction-prompt.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 15px);
+}
+
+@keyframes promptBob {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, -6px); }
+}
+
+.prompt-key {
+  width: 26px;
+  height: 26px;
+  background: var(--uniminuto-gold);
+  color: #0b0f19;
+  font-weight: 800;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.prompt-text {
+  font-size: 0.88rem;
+  color: #fff;
+}
+
+/* Controles de Pie de Página */
+.hud-bottom-controls {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.controls-hint {
+  pointer-events: auto;
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.key-badge {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.7rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.divider {
+  color: var(--text-dim);
+}
+
+.experience-watermark {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+/* Pestañas de Formatos de Estación */
+.station-narrative-box {
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid var(--uniminuto-cyan);
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.station-narrative-box p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.btn-tts {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-glass);
+  color: #38bdf8;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-tts:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38bdf8;
+}
+
+.format-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-glass);
+  padding-bottom: 8px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+}
+
+.format-tab {
+  background: transparent;
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.format-tab:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.format-tab.active {
+  background: rgba(2, 132, 199, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(2, 132, 199, 0.4);
+}
+
+.format-content-view {
+  min-height: 180px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+/* Grilla de Niveles I, II, III */
+.station-levels-section h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.level-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+
+.level-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--uniminuto-gold);
+  margin-bottom: 4px;
+}
+
+.level-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.level-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}

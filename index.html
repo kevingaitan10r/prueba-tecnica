@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNIMINUTO VirtuXperience | Ecosistema Inmersivo de Aprendizaje</title>
+  <meta name="description" content="Mundo virtual inmersivo, narrativo y adaptativo para el fortalecimiento de competencias transversales en UNIMINUTO. Desarrollado por Virtual Experience Engineering SAS.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./src/styles/main.css">
+  <link rel="stylesheet" href="./src/styles/hud.css">
+  <link rel="stylesheet" href="./src/styles/simulators.css">
+  <link rel="stylesheet" href="./src/styles/accessibility.css">
+</head>
+<body class="theme-futuristic">
+  <!-- Salto accesible para lectores de pantalla -->
+  <a href="#main-content" class="skip-link">Saltar a contenido principal / Modo Accesible DUA</a>
+
+  <!-- Contenedor 3D WebGL Three.js -->
+  <div id="webgl-container" aria-hidden="true"></div>
+
+  <!-- Retícula central interactiva (Crosshair) -->
+  <div id="crosshair" class="crosshair" aria-hidden="true">
+    <div class="crosshair-dot"></div>
+    <div class="crosshair-ring"></div>
+  </div>
+
+  <!-- HUD Principal Superior (Barra de Estado del Estudiante) -->
+  <header class="hud-top" role="banner">
+    <div class="hud-brand">
+      <div class="uniminuto-badge">
+        <span class="badge-accent">UNIMINUTO</span>
+        <span class="badge-title">VirtuXperience 3D</span>
+      </div>
+      <div class="hud-tagline">Campus Transversal de Aprendizaje Inmersivo</div>
+    </div>
+
+    <!-- Indicador de Navegación Rápida de Líneas Transversales -->
+    <nav class="hud-transversal-selector" aria-label="Rutas transversales rápidas">
+      <button class="dome-quick-btn active" data-dome="0" title="Ágora Central (Atajo: 0)">
+        <span class="dome-icon">🏛️</span>
+        <span class="dome-label">Ágora</span>
+      </button>
+      <button class="dome-quick-btn" data-dome="1" data-code="comunicarte" title="Comunicarte (Atajo: 1)">
+        <span class="dome-icon">🔵</span>
+        <span class="dome-label">Comunicarte</span>
+      </button>
+      <button class="dome-quick-btn" data-dome="2" data-code="neuromath" title="NeuroMath (Atajo: 2)">
+        <span class="dome-icon">🟣</span>
+        <span class="dome-label">NeuroMath</span>
+      </button>
+      <button class="dome-quick-btn" data-dome="3" data-code="voxcivitas" title="VoxCivitas (Atajo: 3)">
+        <span class="dome-icon">🏛️</span>
+        <span class="dome-label">VoxCivitas</span>
+      </button>
+      <button class="dome-quick-btn" data-dome="4" data-code="gerencia" title="Gerencia+ (Atajo: 4)">
+        <span class="dome-icon">💼</span>
+        <span class="dome-label">Gerencia+</span>
+      </button>
+      <button class="dome-quick-btn" data-dome="5" data-code="actividaidea" title="Activa tu Idea (Atajo: 5)">
+        <span class="dome-icon">💡</span>
+        <span class="dome-label">Activa Tu Idea</span>
+      </button>
+      <button class="dome-quick-btn" data-dome="6" data-code="latidosocial" title="Latido Social (Atajo: 6)">
+        <span class="dome-icon">❤️</span>
+        <span class="dome-label">Latido Social</span>
+      </button>
+    </nav>
+
+    <!-- Estado de Progreso, XP y Accesibilidad -->
+    <div class="hud-user-status">
+      <div class="xp-pill" id="xp-display">
+        <span class="xp-icon">⚡</span>
+        <div class="xp-meta">
+          <span class="xp-text" id="xp-counter">0 XP</span>
+          <div class="xp-bar-track">
+            <div class="xp-bar-fill" id="xp-bar-progress" style="width: 5%;"></div>
+          </div>
+        </div>
+        <span class="user-rank" id="user-rank-badge">Navegante I</span>
+      </div>
+
+      <div class="hud-actions">
+        <button id="btn-open-competencies" class="hud-btn-icon" title="Árbol de Competencias Transversales" aria-label="Abrir árbol de competencias">
+          <span>📊</span> Competencias
+        </button>
+        <button id="btn-open-ai" class="hud-btn-icon hud-btn-ai" title="Tutor IA Pedagógico VirtuMentor" aria-label="Abrir VirtuMentor IA">
+          <span class="ai-sparkle">✨</span> VirtuMentor IA
+        </button>
+        <button id="btn-accessibility" class="hud-btn-icon" title="Configuración de Accesibilidad DUA" aria-label="Opciones de accesibilidad DUA">
+          <span>♿</span> DUA
+        </button>
+        <button id="btn-toggle-sound" class="hud-btn-icon" title="Sonido ambiental y efectos" aria-label="Alternar sonido">
+          <span id="sound-icon">🔊</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Minimapa Holográfico y Estado de Ubicación -->
+  <aside class="hud-minimap-panel" aria-label="Minimapa de navegación">
+    <div class="minimap-header">
+      <span class="minimap-title" id="current-zone-name">Ágora Central UNIMINUTO</span>
+      <span class="coordinates" id="cam-coords">X: 0 | Z: 0</span>
+    </div>
+    <div class="minimap-canvas-wrapper">
+      <canvas id="minimap-canvas" width="180" height="180"></canvas>
+      <div class="minimap-legend">Clic en un domo para teletransportarte</div>
+    </div>
+  </aside>
+
+  <!-- Misiones y Objetivos Activos (Quest Tracker) -->
+  <aside class="hud-quest-tracker" aria-label="Bitácora de Misiones">
+    <div class="quest-header">
+      <span class="quest-tag">MISIÓN PRINCIPAL</span>
+      <button id="btn-minimize-quests" class="btn-sm-ghost" aria-label="Minimizar misiones">_</button>
+    </div>
+    <h3 class="quest-title" id="quest-title">Restauración del Núcleo Transversal</h3>
+    <p class="quest-desc" id="quest-desc">Explora los 6 Domos Temáticos, interactúa con los Mentores Holográficos y completa los retos prácticos para activar los núcleos de competencia.</p>
+    <div class="quest-progress-list" id="quest-progress-list">
+      <!-- Inyectado dinámicamente -->
+    </div>
+  </aside>
+
+  <!-- Controles y Guía de Navegación Inferior -->
+  <footer class="hud-bottom-controls" role="contentinfo">
+    <div class="controls-hint">
+      <span class="key-badge">W</span><span class="key-badge">A</span><span class="key-badge">S</span><span class="key-badge">D</span> Moverse
+      <span class="divider">|</span>
+      <span class="key-badge">Mouse</span> Mirar
+      <span class="divider">|</span>
+      <span class="key-badge">Clic</span> Interactuar
+      <span class="divider">|</span>
+      <span class="key-badge">Espacio</span> Salto / Drone
+      <span class="divider">|</span>
+      <span class="key-badge">1-6</span> Teletransporte a Domos
+      <span class="divider">|</span>
+      <span class="key-badge">M</span> Competencias
+    </div>
+    <div class="experience-watermark">
+      Virtual Experience Engineering SAS &bull; UNIMINUTO 2026
+    </div>
+  </footer>
+
+  <!-- Mensaje de Interacción Contextual Flotante -->
+  <div id="interaction-prompt" class="interaction-prompt hidden" aria-live="polite">
+    <div class="prompt-key">E</div>
+    <div class="prompt-text">Presiona <strong>[E]</strong> o <strong>[Clic]</strong> para interactuar con <span id="prompt-target-name">Estación</span></div>
+  </div>
+
+  <!-- ==================== MODALES Y PANELES INTERACTIVOS ==================== -->
+
+  <!-- Panel Principal Accesible DUA (Para usuarios con o sin 3D) -->
+  <main id="main-content" class="sr-only-focusable">
+    <h2>Navegación Accesible DUA VirtuXperience</h2>
+    <p>Esta plataforma cuenta con equivalencia textual, síntesis de voz y navegación directa por teclado.</p>
+  </main>
+
+  <!-- 1. MODAL: ESTACIÓN DE LÍNEA TRANSVERSAL Y CONTENIDOS (4 FORMATOS) -->
+  <div id="modal-station" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-station-title">
+    <div class="modal-window station-window glass-panel">
+      <header class="modal-header">
+        <div class="modal-header-icon" id="modal-station-icon">🔵</div>
+        <div class="modal-header-meta">
+          <span class="sub-badge" id="modal-station-tag">Línea Transversal</span>
+          <h2 id="modal-station-title">Comunicarte</h2>
+        </div>
+        <button class="modal-close-btn" data-close="modal-station" aria-label="Cerrar estación">&times;</button>
+      </header>
+
+      <div class="modal-body station-body">
+        <!-- Narrador DUA de la estación -->
+        <div class="station-narrative-box">
+          <p id="station-narrative-text">Bienvenido al Domo de la Expresión. Aquí desarrollarás competencias de lenguaje, argumentación y multilingüismo aplicadas a contextos profesionales reales.</p>
+          <button id="btn-speak-station" class="btn-tts" aria-label="Escuchar descripción">
+            <span>🔊</span> Escuchar en Voz Alta
+          </button>
+        </div>
+
+        <!-- Pestañas de los 4 Formatos Pedagógicos VirtuXperience -->
+        <div class="format-tabs" role="tablist">
+          <button class="format-tab active" data-format="gamified" role="tab" aria-selected="true">
+            <span class="tab-icon">🎮</span> Experiencia Práctica / Reto
+          </button>
+          <button class="format-tab" data-format="audiovisual" role="tab" aria-selected="false">
+            <span class="tab-icon">🎬</span> Audiovisual (Cápsula)
+          </button>
+          <button class="format-tab" data-format="audio" role="tab" aria-selected="false">
+            <span class="tab-icon">🎙️</span> Sonoro (Podcast DUA)
+          </button>
+          <button class="format-tab" data-format="diagram" role="tab" aria-selected="false">
+            <span class="tab-icon">🗺️</span> Diagrama Interactivo
+          </button>
+        </div>
+
+        <!-- Contenido Dinámico de la Pestaña Activa -->
+        <div class="format-content-view" id="format-content-view">
+          <!-- Inyectado por JavaScript -->
+        </div>
+
+        <!-- Matriz de Niveles I, II, III de esta Línea -->
+        <section class="station-levels-section">
+          <h3>Niveles de Competencia Transversal</h3>
+          <div class="levels-grid" id="station-levels-grid">
+            <!-- Inyectado por JavaScript -->
+          </div>
+        </section>
+      </div>
+
+      <footer class="modal-footer">
+        <button class="btn-secondary" data-close="modal-station">Cerrar Domo</button>
+        <button id="btn-launch-station-simulator" class="btn-primary glow-btn">
+          🚀 Iniciar Simulación Práctica
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- 2. MODAL: ÁRBOL COMPLETO DE COMPETENCIAS Y PROGRESO -->
+  <div id="modal-competencies" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-comp-title">
+    <div class="modal-window competencies-window glass-panel">
+      <header class="modal-header">
+        <div class="modal-header-icon">📊</div>
+        <div class="modal-header-meta">
+          <span class="sub-badge">Matriz Curricular UNIMINUTO</span>
+          <h2 id="modal-comp-title">Ecosistema de Competencias Transversales</h2>
+        </div>
+        <button class="modal-close-btn" data-close="modal-competencies" aria-label="Cerrar">&times;</button>
+      </header>
+
+      <div class="modal-body">
+        <!-- Resumen General y Radar de Competencias -->
+        <div class="comp-overview-grid">
+          <div class="radar-card glass-subpanel">
+            <h3>Radar de Dominio de Competencias</h3>
+            <canvas id="competency-radar-canvas" width="300" height="260"></canvas>
+          </div>
+          <div class="metrics-card glass-subpanel">
+            <h3>Estado Académico Global</h3>
+            <div class="global-stats-row">
+              <div class="stat-box">
+                <span class="stat-number" id="stat-competencies-unlocked">0/18</span>
+                <span class="stat-label">Competencias Acreditadas</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-number" id="stat-challenges-completed">0/6</span>
+                <span class="stat-label">Simulaciones Prácticas</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-number" id="stat-badges-earned">0/6</span>
+                <span class="stat-label">Insignias Maestras</span>
+              </div>
+            </div>
+            <div class="certificate-cta-banner">
+              <p>Alcanza al menos el 50% de dominio en las 6 líneas para expedir tu <strong>Certificado Oficial de Acreditación Digital</strong>.</p>
+              <button id="btn-view-certificate" class="btn-accent-glow">
+                📜 Ver / Generar Certificado Digital
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Árbol Jerárquico de las 6 Líneas con Niveles I, II, III -->
+        <h3 class="section-title mt-4">Las 6 Líneas de Aprendizaje VirtuXperience</h3>
+        <div class="competencies-accordion" id="competencies-accordion">
+          <!-- Inyectado dinámicamente con las 6 líneas y sus subcomponentes -->
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button class="btn-secondary" data-close="modal-competencies">Cerrar Panel</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- 3. MODAL: SIMULADOR 1 - NEUROMATH & IA (Optimización de Modelos y Lógica) -->
+  <div id="modal-sim-neuromath" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sim-neuromath-title">
+    <div class="modal-window sim-window glass-panel">
+      <header class="modal-header sim-header neuromath-header">
+        <div class="modal-header-icon">🟣</div>
+        <div class="modal-header-meta">
+          <span class="sub-badge">Simulador Práctico Vivencial &bull; NeuroMath & IA</span>
+          <h2 id="sim-neuromath-title">Optimizador Algorítmico y Redes Neuronales</h2>
+        </div>
+        <button class="modal-close-btn" data-close="modal-sim-neuromath" aria-label="Cerrar">&times;</button>
+      </header>
+
+      <div class="modal-body sim-body">
+        <div class="sim-context-bar">
+          <p><strong>Escenario Real UNIMINUTO:</strong> La plataforma de admisiones necesita predecir la trayectoria de éxito de 5,000 nuevos estudiantes para asignar tutorías preventivas. Como ingeniero/a de datos, debes configurar y balancear los parámetros del modelo matemático para maximizar la <strong>Precisión</strong> sin caer en <strong>Sobreajuste (Overfitting)</strong>.</p>
+        </div>
+
+        <div class="sim-grid-neuromath">
+          <div class="sim-controls-panel glass-subpanel">
+            <h3>Parámetros de Entrada del Modelo</h3>
+            
+            <div class="param-group">
+              <label for="nm-learning-rate">Tasa de Aprendizaje (Learning Rate: <span id="val-learning-rate">0.05</span>)</label>
+              <input type="range" id="nm-learning-rate" min="0.001" max="0.3" step="0.005" value="0.05">
+              <div class="param-hint">Valores muy altos causan divergencia; valores muy bajos provocan estancamiento.</div>
+            </div>
+
+            <div class="param-group">
+              <label for="nm-regularization">Factor de Regularización L2 (<span id="val-regularization">0.02</span>)</label>
+              <input type="range" id="nm-regularization" min="0" max="0.1" step="0.005" value="0.02">
+              <div class="param-hint">Controla la penalización a pesos excesivos para evitar sobreajuste.</div>
+            </div>
+
+            <div class="param-group">
+              <label for="nm-layers">Capas Ocultas y Neuronas: <span id="val-layers">4 capas (64 nodos)</span></label>
+              <input type="range" id="nm-layers" min="1" max="8" step="1" value="4">
+            </div>
+
+            <div class="param-group">
+              <label for="nm-optimizer">Algoritmo de Optimización Numérica</label>
+              <select id="nm-optimizer" class="sim-select">
+                <option value="adam">Adam (Adaptive Moment Estimation) - Recomendado</option>
+                <option value="sgd">SGD con Momentum (Stochastic Gradient Descent)</option>
+                <option value="rmsprop">RMSprop (Root Mean Square Propagation)</option>
+              </select>
+            </div>
+
+            <button id="btn-run-simulation-neuromath" class="btn-primary glow-btn w-full mt-3">
+              ⚡ Entrenar Modelo y Evaluar Pérdida
+            </button>
+          </div>
+
+          <div class="sim-feedback-panel glass-subpanel">
+            <h3>Métricas de Desempeño Matemático</h3>
+            <canvas id="neuromath-chart-canvas" width="380" height="200"></canvas>
+            
+            <div class="sim-metrics-readout">
+              <div class="metric-item">
+                <span class="metric-title">Precisión (Accuracy)</span>
+                <span class="metric-value" id="nm-metric-acc">--%</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-title">Pérdida (Loss)</span>
+                <span class="metric-value" id="nm-metric-loss">--</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-title">Generalización</span>
+                <span class="metric-value" id="nm-metric-generalization">--</span>
+              </div>
+            </div>
+
+            <div class="sim-ai-eval" id="nm-feedback-box">
+              <div class="feedback-badge">Diagnóstico Pedagógico NeuroMath</div>
+              <p id="nm-feedback-text">Ajusta los hiperparámetros y ejecuta la simulación para observar el comportamiento de convergencia matemática.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button class="btn-secondary" data-close="modal-sim-neuromath">Salir</button>
+        <button id="btn-claim-neuromath" class="btn-accent-glow" disabled>
+          🏆 Acreditar Competencia NeuroMath (+150 XP)
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- 4. MODAL: SIMULADOR 2 - GERENCIA+ (Metodologías Ágiles y Gestión de Crisis) -->
+  <div id="modal-sim-gerencia" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sim-gerencia-title">
+    <div class="modal-window sim-window glass-panel">
+      <header class="modal-header sim-header gerencia-header">
+        <div class="modal-header-icon">💼</div>
+        <div class="modal-header-meta">
+          <span class="sub-badge">Simulador Práctico Vivencial &bull; Gerencia+</span>
+          <h2 id="sim-gerencia-title">Misión Sprint Ágil y Liderazgo Estratégico</h2>
+        </div>
+        <button class="modal-close-btn" data-close="modal-sim-gerencia" aria-label="Cerrar">&times;</button>
+      </header>
+
+      <div class="modal-body sim-body">
+        <div class="sim-context-bar">
+          <p><strong>Contexto Gerencial:</strong> Lideras un equipo multidisciplinario en un Sprint de 2 semanas para entregar la nueva plataforma de apoyo a micronegocios. Tienes 4 eventos críticos con eventos imprevistos donde debes tomar decisiones equilibrando <strong>Velocidad del Sprint</strong>, <strong>Moral del Equipo</strong> y <strong>Presupuesto / Alcance</strong>.</p>
+        </div>
+
+        <div class="gerencia-sim-grid">
+          <div class="sprint-dashboard glass-subpanel">
+            <div class="sprint-gauges">
+              <div class="gauge-card">
+                <span class="gauge-label">Velocidad del Sprint</span>
+                <div class="gauge-bar"><div class="gauge-fill" id="gauge-velocity" style="width: 50%;"></div></div>
+                <span class="gauge-number" id="num-velocity">50 pts</span>
+              </div>
+              <div class="gauge-card">
+                <span class="gauge-label">Moral del Equipo</span>
+                <div class="gauge-bar"><div class="gauge-fill" id="gauge-morale" style="width: 70%;"></div></div>
+                <span class="gauge-number" id="num-morale">70%</span>
+              </div>
+              <div class="gauge-card">
+                <span class="gauge-label">Calidad & Presupuesto</span>
+                <div class="gauge-bar"><div class="gauge-fill" id="gauge-budget" style="width: 80%;"></div></div>
+                <span class="gauge-number" id="num-budget">80%</span>
+              </div>
+            </div>
+
+            <!-- Escenario / Ronda Actual -->
+            <div class="sprint-event-card glass-card-nested" id="gerencia-event-card">
+              <div class="event-step-pill" id="gerencia-step-pill">Evento 1 de 4: Sprint Planning</div>
+              <h3 id="gerencia-event-title">Sobrecarga de Historias de Usuario</h3>
+              <p id="gerencia-event-desc">El cliente solicita incorporar 5 nuevas funcionalidades no estimadas a 3 días de iniciar el sprint sin aumentar el plazo de entrega.</p>
+              
+              <div class="event-options-list" id="gerencia-options-container">
+                <!-- Opciones inyectadas dinámicamente -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button class="btn-secondary" data-close="modal-sim-gerencia">Salir</button>
+        <button id="btn-claim-gerencia" class="btn-accent-glow" disabled>
+          🏆 Acreditar Competencia Gerencia+ (+150 XP)
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- 5. MODAL: SIMULADOR 3 - LATIDO SOCIAL & VOXCIVITAS (Impacto y Resolución Ética) -->
+  <div id="modal-sim-social" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sim-social-title">
+    <div class="modal-window sim-window glass-panel">
+      <header class="modal-header sim-header social-header">
+        <div class="modal-header-icon">❤️</div>
+        <div class="modal-header-meta">
+          <span class="sub-badge">Simulador Práctico Vivencial &bull; Latido Social & VoxCivitas</span>
+          <h2 id="sim-social-title">Laboratorio de Transformación y Diagnóstico Comunitario</h2>
+        </div>
+        <button class="modal-close-btn" data-close="modal-sim-social" aria-label="Cerrar">&times;</button>
+      </header>
+
+      <div class="modal-body sim-body">
+        <div class="sim-context-bar">
+          <p><strong>Misión Social en Territorio:</strong> Un municipio rural enfrenta escasez de agua potable y tensiones entre agricultores y una cooperativa comunitaria. Como líder social UNIMINUTO, debes estructurar un plan de acción participativo asignando recursos y mecanismos de mediación dialógica.</p>
+        </div>
+
+        <div class="social-sim-grid">
+          <div class="social-allocation-panel glass-subpanel">
+            <h3>Distribución del Fondo Comunitario (100 Unidades)</h3>
+            <p class="budget-tracker">Puntos Disponibles: <span id="social-points-left">100</span> / 100</p>
+
+            <div class="allocation-row">
+              <label for="alloc-infra">Infraestructura y Captación Hídrica: <span id="lbl-alloc-infra">30</span> pts</label>
+              <input type="range" id="alloc-infra" min="0" max="60" value="30" class="alloc-slider">
+            </div>
+
+            <div class="allocation-row">
+              <label for="alloc-mediation">Mesas de Diálogo y Formación Ciudadana: <span id="lbl-alloc-mediation">30</span> pts</label>
+              <input type="range" id="alloc-mediation" min="0" max="60" value="30" class="alloc-slider">
+            </div>
+
+            <div class="allocation-row">
+              <label for="alloc-sustainability">Educación Ambiental y Sostenibilidad Agro: <span id="lbl-alloc-sustainability">40</span> pts</label>
+              <input type="range" id="alloc-sustainability" min="0" max="60" value="40" class="alloc-slider">
+            </div>
+
+            <div class="param-group mt-3">
+              <label for="social-decision-select">Estrategia de Gobernanza Democrática:</label>
+              <select id="social-decision-select" class="sim-select">
+                <option value="participative">Asamblea Popular y Veeduría Ciudadana Mixta (Recomendado)</option>
+                <option value="technocratic">Comité Técnico Cerrado de Expertos Externos</option>
+                <option value="delegated">Delegación Exclusiva a la Cooperativa Agrícola</option>
+              </select>
+            </div>
+
+            <button id="btn-simulate-social-impact" class="btn-primary glow-btn w-full mt-3">
+              🌱 Simular Impacto Social a 12 Meses
+            </button>
+          </div>
+
+          <div class="social-impact-results glass-subpanel">
+            <h3>Indicadores de Desarrollo Humano Integral</h3>
+            <div class="social-kpi-grid">
+              <div class="kpi-card">
+                <span class="kpi-title">Cohesión Social</span>
+                <span class="kpi-val" id="kpi-cohesion">--%</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-title">Sostenibilidad Ambiental</span>
+                <span class="kpi-val" id="kpi-eco">--%</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-title">Equidad y Acceso</span>
+                <span class="kpi-val" id="kpi-equity">--%</span>
+              </div>
+            </div>
+
+            <div class="sim-ai-eval mt-3" id="social-eval-box">
+              <div class="feedback-badge">Dictamen Pedagógico de Impacto</div>
+              <p id="social-eval-text">Distribuye el presupuesto comunitario y define la estrategia de gobernanza para medir los resultados del proyecto social.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button class="btn-secondary" data-close="modal-sim-social">Salir</button>
+        <button id="btn-claim-social" class="btn-accent-glow" disabled>
+          🏆 Acreditar Competencia Latido Social (+150 XP)
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- 6. MODAL: ASISTENTE VIRTUAL PEDAGÓGICO "VirtuMentor IA" -->
+  <div id="modal-ai" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
+    <div class="modal-window ai-window glass-panel">
+      <header class="modal-header ai-header">
+        <div class="modal-header-icon ai-avatar-glow">🤖</div>
+        <div class="modal-header-meta">
+          <span class="sub-badge">Inteligencia Artificial Adaptativa &bull; Tutor DUA</span>
+          <h2 id="ai-modal-title">VirtuMentor IA</h2>
+        </div>
+        <button class="modal-close-btn" data-close="modal-ai" aria-label="Cerrar">&times;</button>
+      </header>
+
+      <div class="modal-body ai-body">
+        <!-- Diagnóstico Rápido DUA -->
+        <div class="ai-profile-strip" id="ai-dua-profile-strip">
+          <div class="profile-meta">
+            <span class="profile-label">Perfil de Aprendizaje DUA:</span>
+            <strong id="ai-profile-style">Práctico / Kinestésico y Visual</strong>
+          </div>
+          <button id="btn-recalibrate-dua" class="btn-sm-ghost">Recalibrar Estilo</button>
+        </div>
+
+        <!-- Historial de Conversación Adaptativa -->
+        <div class="ai-chat-history" id="ai-chat-history">
+          <div class="chat-msg bot-msg">
+            <div class="msg-avatar">🤖</div>
+            <div class="msg-content">
+              <p>¡Hola, Navegante del Conocimiento! Soy <strong>VirtuMentor IA</strong>, tu tutor adaptativo en VirtuXperience. Estoy aquí para guiarte en las 6 líneas transversales, darte andamiaje en los retos prácticos y sugerirte la mejor ruta según tu estilo de aprendizaje.</p>
+              <p class="mt-2 text-dim">¿En qué área deseas concentrarte hoy o qué reto práctico deseas resolver?</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preguntas Rápidas Pedagógicas -->
+        <div class="ai-quick-prompts">
+          <button class="quick-prompt-btn" data-prompt="¿Qué ruta transversal me recomiendas iniciar hoy?">🎯 ¿Qué ruta me recomiendas?</button>
+          <button class="quick-prompt-btn" data-prompt="Dame una pista para superar el simulador de NeuroMath e IA.">🧠 Pista para NeuroMath</button>
+          <button class="quick-prompt-btn" data-prompt="¿Cómo se aplica el liderazgo ágil en Gerencia+?">💼 Liderazgo en Gerencia+</button>
+          <button class="quick-prompt-btn" data-prompt="¿Cómo se articulan las 6 líneas de VirtuXperience con el DUA?">♿ Explicar enfoque DUA</button>
+        </div>
+
+        <!-- Input de Mensaje -->
+        <form class="ai-chat-input-form" id="ai-chat-form">
+          <input type="text" id="ai-chat-input" placeholder="Escribe tu consulta o pide andamiaje a VirtuMentor IA..." autocomplete="off">
+          <button type="submit" class="btn-primary glow-btn" id="btn-send-ai">Enviar</button>
+        </form>
+      </div>
+
+      <footer class="modal-footer">
+        <button class="btn-secondary" data-close="modal-ai">Minimizar Tutor</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- 7. MODAL: ACCESIBILIDAD Y DUA (Diseño Universal para el Aprendizaje) -->
+  <div id="modal-accessibility" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="acc-modal-title">
+    <div class="modal-window acc-window glass-panel">
+      <header class="modal-header">
+        <div class="modal-header-icon">♿</div>
+        <div class="modal-header-meta">
+          <span class="sub-badge">Inclusión y Equidad Pedagógica</span>
+          <h2 id="acc-modal-title">Centro de Accesibilidad y Principios DUA</h2>
+        </div>
+        <button class="modal-close-btn" data-close="modal-accessibility" aria-label="Cerrar">&times;</button>
+      </header>
+
+      <div class="modal-body acc-body">
+        <div class="dua-callout glass-subpanel">
+          <p>El <strong>Diseño Universal para el Aprendizaje (DUA)</strong> en UNIMINUTO garantiza múltiples formas de <strong>representación</strong>, <strong>expresión</strong> e <strong>implicación</strong>, adaptando el entorno a las diversas capacidades, ritmos y necesidades de cada estudiante.</p>
+        </div>
+
+        <div class="acc-options-list">
+          <div class="acc-option-row">
+            <div class="option-info">
+              <span class="option-name">Modo Alto Contraste (WCAG AAA)</span>
+              <span class="option-desc">Paleta de alto contraste para baja visión o fatiga visual</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-high-contrast">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="acc-option-row">
+            <div class="option-info">
+              <span class="option-name">Lector de Pantalla / Voz en Off (TTS)</span>
+              <span class="option-desc">Narración por voz sintética de todos los diálogos y contenidos</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-tts-auto" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="acc-option-row">
+            <div class="option-info">
+              <span class="option-name">Reducción de Movimiento (Sensibilidad Vestibular)</span>
+              <span class="option-desc">Elimina balanceo de cámara y partículas flotantes</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-reduced-motion">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="acc-option-row">
+            <div class="option-info">
+              <span class="option-name">Tamaño de Tipografía</span>
+              <span class="option-desc">Ajuste de legibilidad para lectura prolongada</span>
+            </div>
+            <div class="font-size-buttons">
+              <button class="btn-sm-ghost font-btn" data-size="normal">A</button>
+              <button class="btn-sm-ghost font-btn" data-size="large">A+</button>
+              <button class="btn-sm-ghost font-btn" data-size="xlarge">A++</button>
+            </div>
+          </div>
+
+          <div class="acc-option-row">
+            <div class="option-info">
+              <span class="option-name">Modo 2D Accesible Directo</span>
+              <span class="option-desc">Navegación tabular sin interacción 3D para lectores de pantalla externos</span>
+            </div>
+            <button id="btn-switch-2d-mode" class="btn-secondary btn-sm">Activar Modo 2D HUD</button>
+          </div>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button class="btn-secondary" data-close="modal-accessibility">Guardar Preferencias</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- 8. MODAL: CERTIFICADO OFICIAL DE COMPETENCIAS DIGITAL -->
+  <div id="modal-certificate" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="cert-modal-title">
+    <div class="modal-window cert-window glass-panel">
+      <header class="modal-header">
+        <div class="modal-header-icon">📜</div>
+        <div class="modal-header-meta">
+          <span class="sub-badge">Acreditación Oficial de Competencias</span>
+          <h2 id="cert-modal-title">Certificado Digital UNIMINUTO VirtuXperience</h2>
+        </div>
+        <button class="modal-close-btn" data-close="modal-certificate" aria-label="Cerrar">&times;</button>
+      </header>
+
+      <div class="modal-body cert-body">
+        <div class="certificate-diploma" id="certificate-print-area">
+          <div class="cert-border">
+            <div class="cert-header-row">
+              <div class="cert-uniminuto-logo">
+                <span class="cert-logo-bold">UNIMINUTO</span>
+                <span class="cert-logo-sub">Corporación Universitaria Minuto de Dios</span>
+              </div>
+              <div class="cert-seal">
+                <div class="seal-inner">ACREDITADO<br>DUA 2026</div>
+              </div>
+            </div>
+
+            <div class="cert-middle">
+              <p class="cert-presents">La Vicerrectoría General Académica y VirtuXperience certifican que:</p>
+              <h3 class="cert-student-name" id="cert-student-name">Estudiante Destacado UNIMINUTO</h3>
+              <p class="cert-detail">Ha completado satisfactoriamente los desafíos prácticos vivenciales y demostrado el desarrollo de competencias académicas transversales en el mundo inmersivo <strong>VirtuXperience</strong> en las líneas:</p>
+              
+              <div class="cert-skills-badge-row">
+                <span class="cert-pill">Comunicarte</span>
+                <span class="cert-pill">NeuroMath</span>
+                <span class="cert-pill">VoxCivitas</span>
+                <span class="cert-pill">Gerencia+</span>
+                <span class="cert-pill">Activa Tu Idea</span>
+                <span class="cert-pill">Latido Social</span>
+              </div>
+
+              <div class="cert-footer-row">
+                <div class="cert-signature-box">
+                  <div class="sig-line"></div>
+                  <span class="sig-name">Dirección VirtuXperience</span>
+                  <span class="sig-sub">UNIMINUTO Virtual</span>
+                </div>
+                <div class="cert-qr-box">
+                  <div class="cert-qr-fake"></div>
+                  <span class="cert-hash" id="cert-hash-code">HASH: VX-2026-9842F</span>
+                </div>
+                <div class="cert-signature-box">
+                  <div class="sig-line"></div>
+                  <span class="sig-name">Comité de Evaluación Técnica</span>
+                  <span class="sig-sub">Virtual Experience Engineering SAS</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button class="btn-secondary" data-close="modal-certificate">Cerrar</button>
+        <button id="btn-print-certificate" class="btn-primary glow-btn">
+          🖨️ Imprimir / Guardar en PDF
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Toast de Notificaciones y Logros -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Script Principal de Entrada -->
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
