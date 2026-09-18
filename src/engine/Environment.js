@@ -15,6 +15,7 @@ export class Environment {
     this.skylineBeacons = [];
     this.thematicMonuments = {};
     this.floatingSigns = [];
+    this.dynamicArchitectures = {};
 
     this.buildCampus();
   }
@@ -605,489 +606,483 @@ export class Environment {
   }
 
   /* -------------------------------------------------------------------------- */
-  /* 5.1 COMUNICARTE: Pabellón Acústico de Conchas Parabólicas                  */
+  /* 5.1 COMUNICARTE: Radio-Observatorio Parabólico & Antena Sónica             */
   /* -------------------------------------------------------------------------- */
   buildComunicarteArchitecture(group, line) {
     const color = line.colorThree;
 
-    // Conchas acústicas escalonadas tipo Ópera de Sídney
-    const shells = [
-      { radius: 9.5, height: 7.5, zOffset: -1.5, angle: 0.12 },
-      { radius: 8.8, height: 7.0, zOffset: 1.0, angle: 0.08 },
-      { radius: 8.0, height: 6.2, zOffset: 3.5, angle: 0.04 }
-    ];
+    // Gran Plato Parabólico de Datos de Telecomunicaciones
+    const dishGeo = new THREE.SphereGeometry(9.2, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2.6);
+    const dishMat = new THREE.MeshPhysicalMaterial({
+      color: 0x0f172a,
+      emissive: color,
+      emissiveIntensity: 0.35,
+      metalness: 0.8,
+      roughness: 0.15,
+      transparent: true,
+      opacity: 0.35,
+      side: THREE.DoubleSide
+    });
+    const dish = new THREE.Mesh(dishGeo, dishMat);
+    dish.rotation.x = -0.35; // Inclinación parabólica hacia el cielo
+    dish.position.set(0, 4.5, -1.0);
+    group.add(dish);
 
-    shells.forEach((sh) => {
-      // Arco exterior de la concha
-      const archGeo = new THREE.TorusGeometry(sh.radius, 0.22, 12, 32, Math.PI);
-      const archMat = new THREE.MeshStandardMaterial({
-        color: 0x1e293b,
-        emissive: color,
-        emissiveIntensity: 0.3,
-        metalness: 0.8,
-        roughness: 0.2
-      });
-      const arch = new THREE.Mesh(archGeo, archMat);
-      arch.position.set(0, 0.5, sh.zOffset);
-      arch.rotation.x = sh.angle;
-      group.add(arch);
+    // Borde de Neón Cian del Plato
+    const dishRim = new THREE.Mesh(
+      new THREE.RingGeometry(8.9, 9.2, 48),
+      new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide })
+    );
+    dishRim.rotation.x = Math.PI / 2 - 0.35;
+    dishRim.position.set(0, 4.5, -1.0);
+    group.add(dishRim);
 
-      // Franja de neón luminoso en el borde de la concha
-      const neonGeo = new THREE.TorusGeometry(sh.radius + 0.1, 0.08, 8, 32, Math.PI);
-      const neonMat = new THREE.MeshBasicMaterial({ color: color });
-      const neon = new THREE.Mesh(neonGeo, neonMat);
-      neon.position.set(0, 0.5, sh.zOffset);
-      neon.rotation.x = sh.angle;
-      group.add(neon);
+    // Mástil Central Focal de Radiofrecuencia
+    const mastGeo = new THREE.CylinderGeometry(0.12, 0.25, 6.5, 8);
+    const mastMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9 });
+    const mast = new THREE.Mesh(mastGeo, mastMat);
+    mast.rotation.x = -0.35;
+    mast.position.set(0, 7.5, -1.8);
+    group.add(mast);
 
-      // Membrana acústica translúcida entre conchas
-      const roofGeo = new THREE.CylinderGeometry(sh.radius, sh.radius, 2.5, 24, 1, true, 0, Math.PI);
-      const roofMat = new THREE.MeshPhysicalMaterial({
-        color: color,
-        emissive: color,
-        emissiveIntensity: 0.2,
-        transparent: true,
-        opacity: 0.28,
-        roughness: 0.1,
-        transmission: 0.8,
-        side: THREE.DoubleSide
-      });
-      const roof = new THREE.Mesh(roofGeo, roofMat);
-      roof.rotation.z = Math.PI / 2;
-      roof.position.set(0, 0.5, sh.zOffset);
-      group.add(roof);
+    // Foco emisor con luz pulsante en la punta del mástil
+    const focalEmitter = new THREE.Mesh(
+      new THREE.SphereGeometry(0.45, 16, 16),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    focalEmitter.position.set(0, 10.5, -2.6);
+    group.add(focalEmitter);
+
+    // Torres gemelas de transmisión con anillos de radiofrecuencia laterales
+    [-7.8, 7.8].forEach((xPos) => {
+      const towerGeo = new THREE.CylinderGeometry(0.4, 0.6, 11, 12);
+      const towerMat = new THREE.MeshStandardMaterial({ color: 0x090e1c, metalness: 0.85 });
+      const tower = new THREE.Mesh(towerGeo, towerMat);
+      tower.position.set(xPos, 5.5, 2.0);
+      group.add(tower);
+
+      // Anillos de microondas que pulsan
+      for (let k = 0; k < 3; k++) {
+        const rGeo = new THREE.TorusGeometry(1.2 - k * 0.25, 0.06, 8, 24);
+        const rMat = new THREE.MeshBasicMaterial({ color: color });
+        const ring = new THREE.Mesh(rGeo, rMat);
+        ring.rotation.x = Math.PI / 2;
+        ring.position.set(xPos, 6.0 + k * 1.8, 2.0);
+        group.add(ring);
+      }
     });
 
-    // 4 Alerones acústicos verticales laterales con rieles LED
-    [-8.5, 8.5].forEach((xSide) => {
-      [-2, 2].forEach((zPos) => {
-        const finGeo = new THREE.BoxGeometry(0.3, 6.0, 1.8);
-        const finMat = new THREE.MeshStandardMaterial({
-          color: 0x0f172a,
-          metalness: 0.85,
-          roughness: 0.2
-        });
-        const fin = new THREE.Mesh(finGeo, finMat);
-        fin.position.set(xSide, 3.5, zPos);
-        fin.rotation.y = xSide > 0 ? -0.2 : 0.2;
-        group.add(fin);
+    // Portal de entrada con barras verticales acústicas
+    const portalArch = new THREE.Mesh(
+      new THREE.TorusGeometry(3.2, 0.22, 12, 28, Math.PI),
+      new THREE.MeshBasicMaterial({ color: color })
+    );
+    portalArch.position.set(0, 0.5, 9.2);
+    group.add(portalArch);
 
-        const finStrip = new THREE.Mesh(
-          new THREE.PlaneGeometry(0.12, 5.5),
-          new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide })
-        );
-        finStrip.position.set(xSide + (xSide > 0 ? -0.16 : 0.16), 3.5, zPos);
-        finStrip.rotation.y = Math.PI / 2;
-        group.add(finStrip);
-      });
-    });
-
-    // Gran Portal aerodinámico de entrada
-    const portalGeo = new THREE.TorusGeometry(3.2, 0.2, 12, 32, Math.PI);
-    const portalMat = new THREE.MeshBasicMaterial({ color: color });
-    const portal = new THREE.Mesh(portalGeo, portalMat);
-    portal.position.set(0, 0.5, 9.2);
-    group.add(portal);
+    this.dynamicArchitectures['comunicarte'] = { focalEmitter };
   }
 
   /* -------------------------------------------------------------------------- */
-  /* 5.2 NEUROMATH: Cúpula Polifacetada Tipo Gema / Cristal Cuántico             */
+  /* 5.2 NEUROMATH: Prisma Octaédrico Flotante con Suspensión Magnética          */
   /* -------------------------------------------------------------------------- */
   buildNeuroMathArchitecture(group, line) {
     const color = line.colorThree;
 
-    // Cúpula geométrica facetada de cristal cuántico (Dodecaedro truncado)
-    const domeGeo = new THREE.IcosahedronGeometry(9.2, 1);
-    const domeMat = new THREE.MeshPhysicalMaterial({
+    // Gran Prisma Octaédrico Cuántico FLOTANDO en el aire (Antigravedad)
+    const prismGeo = new THREE.OctahedronGeometry(6.5, 0);
+    const prismMat = new THREE.MeshPhysicalMaterial({
       color: color,
-      emissive: color,
-      emissiveIntensity: 0.45,
+      emissive: 0x6d28d9,
+      emissiveIntensity: 0.6,
       roughness: 0.05,
       metalness: 0.2,
-      transmission: 0.88,
-      thickness: 0.8,
+      transmission: 0.85,
+      thickness: 1.2,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.45,
       flatShading: true,
       side: THREE.DoubleSide
     });
-    const dome = new THREE.Mesh(domeGeo, domeMat);
-    dome.position.y = 1.0;
-    group.add(dome);
+    const floatingPrism = new THREE.Mesh(prismGeo, prismMat);
+    floatingPrism.position.set(0, 6.2, 0);
+    group.add(floatingPrism);
 
-    // Aristas de fibra óptica violeta brillante
-    const wireGeo = new THREE.IcosahedronGeometry(9.28, 1);
-    const wireMat = new THREE.MeshBasicMaterial({
-      color: 0xc084fc,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.7
-    });
-    const wireDome = new THREE.Mesh(wireGeo, wireMat);
-    wireDome.position.y = 1.0;
-    group.add(wireDome);
+    // Aristas de Neón Violeta del Prisma
+    const prismWire = new THREE.Mesh(
+      new THREE.OctahedronGeometry(6.58, 0),
+      new THREE.MeshBasicMaterial({ color: 0xc084fc, wireframe: true })
+    );
+    floatingPrism.add(prismWire);
 
-    // Anillo Acelerador de Partículas Toroidal Horizontal
-    const accelGeo = new THREE.TorusGeometry(10.2, 0.18, 16, 64);
-    const accelMat = new THREE.MeshBasicMaterial({ color: color });
-    const accelRing = new THREE.Mesh(accelGeo, accelMat);
-    accelRing.rotation.x = Math.PI / 2;
-    accelRing.position.y = 5.0;
-    group.add(accelRing);
-
-    // 4 Arbotantes angulares de titanio que anclan el domo
+    // 4 Pilares de Suspensión Magnética (Tesla Pylons) con Bobinas
     const angles = [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4];
     angles.forEach((ang) => {
-      const pylonGeo = new THREE.BoxGeometry(0.7, 7.5, 0.7);
-      const pylonMat = new THREE.MeshStandardMaterial({
-        color: 0x090e1c,
-        metalness: 0.9,
-        roughness: 0.2
-      });
-      const pylon = new THREE.Mesh(pylonGeo, pylonMat);
-      const x = Math.cos(ang) * 9.6;
-      const z = Math.sin(ang) * 9.6;
-      pylon.position.set(x, 3.8, z);
-      pylon.rotation.y = ang;
-      pylon.rotation.z = (x > 0 ? 0.18 : -0.18);
-      group.add(pylon);
+      const pylonGroup = new THREE.Group();
+      const x = Math.cos(ang) * 9.5;
+      const z = Math.sin(ang) * 9.5;
+      pylonGroup.position.set(x, 0, z);
 
-      // Luz nodal en el arbotante
-      const nodeGeo = new THREE.SphereGeometry(0.3, 8, 8);
-      const nodeMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
-      const node = new THREE.Mesh(nodeGeo, nodeMat);
-      node.position.set(x, 7.5, z);
-      group.add(node);
+      // Torre cilíndrica de la bobina
+      const pylonGeo = new THREE.CylinderGeometry(0.5, 0.7, 9.0, 16);
+      const pylonMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.9 });
+      const pylon = new THREE.Mesh(pylonGeo, pylonMat);
+      pylon.position.y = 4.5;
+      pylonGroup.add(pylon);
+
+      // Esfera de descarga en la cúspide
+      const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(0.8, 16, 16),
+        new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x38bdf8, emissiveIntensity: 0.8, metalness: 0.9 })
+      );
+      sphere.position.y = 9.2;
+      pylonGroup.add(sphere);
+
+      // Anillo de Tesla
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(0.95, 0.1, 8, 24),
+        new THREE.MeshBasicMaterial({ color: 0xc084fc })
+      );
+      ring.rotation.x = Math.PI / 2;
+      ring.position.y = 7.5;
+      pylonGroup.add(ring);
+
+      group.add(pylonGroup);
     });
 
-    // Portal de acceso hexagonal cuántico
-    const portalGeo = new THREE.RingGeometry(2.6, 2.9, 6);
-    const portalMat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
-    const portal = new THREE.Mesh(portalGeo, portalMat);
-    portal.position.set(0, 2.8, 9.2);
+    // Anillo de confinamiento magnético en el suelo
+    const floorRing = new THREE.Mesh(
+      new THREE.RingGeometry(5.0, 5.5, 36),
+      new THREE.MeshBasicMaterial({ color: 0x8b5cf6, side: THREE.DoubleSide })
+    );
+    floorRing.rotation.x = -Math.PI / 2;
+    floorRing.position.y = 0.52;
+    group.add(floorRing);
+
+    // Portal de acceso cuántico con marcos angulares
+    const portal = new THREE.Mesh(
+      new THREE.TorusGeometry(3.0, 0.22, 4, 16, Math.PI),
+      new THREE.MeshBasicMaterial({ color: color })
+    );
+    portal.position.set(0, 0.5, 9.2);
     group.add(portal);
+
+    this.dynamicArchitectures['neuromath'] = { floatingPrism, basePrismY: 6.2 };
   }
 
   /* -------------------------------------------------------------------------- */
-  /* 5.3 VOXCIVITAS: Rotonda Republicana Futurista / Panteón Cívico             */
+  /* 5.3 VOXCIVITAS: Pirámide Diamante de Cristal Dorado (Templo Cívico)        */
   /* -------------------------------------------------------------------------- */
   buildVoxCivitasArchitecture(group, line) {
-    const color = line.colorThree;
     const goldColor = 0xe8a800;
 
-    // Peristilo de 10 Columnas Cilíndricas de Luz
-    const colCount = 10;
-    const colRadius = 8.8;
-    for (let i = 0; i < colCount; i++) {
-      const ang = (i / colCount) * Math.PI * 2;
-      const x = Math.cos(ang) * colRadius;
-      const z = Math.sin(ang) * colRadius;
-
-      // Dejar el frente abierto para el acceso
-      if (z > 7.0) continue;
-
-      const colGeo = new THREE.CylinderGeometry(0.35, 0.42, 6.2, 16);
-      const colMat = new THREE.MeshStandardMaterial({
-        color: 0x1e293b,
-        metalness: 0.85,
-        roughness: 0.25
-      });
-      const col = new THREE.Mesh(colGeo, colMat);
-      col.position.set(x, 3.4, z);
-      group.add(col);
-
-      // Capitel de luz dorada en la cima de la columna
-      const capGeo = new THREE.CylinderGeometry(0.55, 0.35, 0.3, 16);
-      const capMat = new THREE.MeshBasicMaterial({ color: goldColor });
-      const cap = new THREE.Mesh(capGeo, capMat);
-      cap.position.set(x, 6.55, z);
-      group.add(cap);
-    }
-
-    // Entablamento / Anillo arquitrabe perimetral superior
-    const entablatureGeo = new THREE.TorusGeometry(colRadius, 0.35, 12, 40);
-    const entablatureMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      roughness: 0.3,
-      metalness: 0.8
-    });
-    const entablature = new THREE.Mesh(entablatureGeo, entablatureMat);
-    entablature.rotation.x = Math.PI / 2;
-    entablature.position.y = 6.8;
-    group.add(entablature);
-
-    // Cúpula Clásica con Óculo Cenital Abierto
-    const domeGeo = new THREE.SphereGeometry(colRadius, 32, 16, 0, Math.PI * 2, 0, Math.PI / 3);
-    const domeMat = new THREE.MeshPhysicalMaterial({
-      color: color,
+    // Gran Pirámide de Cristal Dorado Facetado
+    const pyrGeo = new THREE.ConeGeometry(9.6, 11.5, 4, 1, true);
+    const pyrMat = new THREE.MeshPhysicalMaterial({
+      color: goldColor,
       emissive: goldColor,
-      emissiveIntensity: 0.25,
+      emissiveIntensity: 0.4,
+      metalness: 0.3,
+      roughness: 0.08,
+      transmission: 0.82,
       transparent: true,
-      opacity: 0.32,
-      roughness: 0.1,
-      transmission: 0.8,
+      opacity: 0.38,
+      flatShading: true,
       side: THREE.DoubleSide
     });
-    const dome = new THREE.Mesh(domeGeo, domeMat);
-    dome.position.y = 6.8;
-    group.add(dome);
+    const pyramid = new THREE.Mesh(pyrGeo, pyrMat);
+    pyramid.rotation.y = Math.PI / 4;
+    pyramid.position.y = 5.75;
+    group.add(pyramid);
 
-    // Anillo dorado del Óculo Cenital
-    const oculusGeo = new THREE.TorusGeometry(3.6, 0.15, 12, 36);
-    const oculusMat = new THREE.MeshBasicMaterial({ color: goldColor });
-    const oculus = new THREE.Mesh(oculusGeo, oculusMat);
-    oculus.rotation.x = Math.PI / 2;
-    oculus.position.y = 11.2;
-    group.add(oculus);
-
-    // Pórtico Monumental con Frontón de Luz Triangular
-    const pedimentGeo = new THREE.ConeGeometry(3.4, 1.4, 3);
-    const pedimentMat = new THREE.MeshStandardMaterial({
-      color: 0x1e293b,
-      metalness: 0.8,
-      roughness: 0.2
-    });
-    const pediment = new THREE.Mesh(pedimentGeo, pedimentMat);
-    pediment.rotation.z = Math.PI;
-    pediment.position.set(0, 6.2, 9.4);
-    group.add(pediment);
-
-    const pedimentBorder = new THREE.Mesh(
-      new THREE.RingGeometry(3.2, 3.4, 3),
-      new THREE.MeshBasicMaterial({ color: goldColor, side: THREE.DoubleSide })
+    // Estructura de Aristas Geodésicas de Oro
+    const pyrWire = new THREE.Mesh(
+      new THREE.ConeGeometry(9.65, 11.55, 4, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0xfef08a, wireframe: true })
     );
-    pedimentBorder.position.set(0, 6.2, 9.42);
-    group.add(pedimentBorder);
+    pyrWire.rotation.y = Math.PI / 4;
+    pyrWire.position.y = 5.75;
+    group.add(pyrWire);
+
+    // Faro Diamante en la cúspide
+    const apexCrystal = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.9, 0),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    apexCrystal.position.y = 11.8;
+    group.add(apexCrystal);
+
+    // Pórtico Monumental con Columnas de Oro y Frontón Tech
+    [-2.2, 2.2].forEach((xSide) => {
+      const col = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 5.2, 0.6),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.85, roughness: 0.2 })
+      );
+      col.position.set(xSide, 2.6, 9.4);
+      group.add(col);
+
+      const colTrim = new THREE.Mesh(
+        new THREE.BoxGeometry(0.7, 0.3, 0.7),
+        new THREE.MeshBasicMaterial({ color: goldColor })
+      );
+      colTrim.position.set(xSide, 5.3, 9.4);
+      group.add(colTrim);
+    });
+
+    const portalBeam = new THREE.Mesh(
+      new THREE.BoxGeometry(5.4, 0.5, 0.8),
+      new THREE.MeshBasicMaterial({ color: goldColor })
+    );
+    portalBeam.position.set(0, 5.5, 9.4);
+    group.add(portalBeam);
   }
 
   /* -------------------------------------------------------------------------- */
-  /* 5.4 GERENCIA+: Hub Directivo Helicoidal Dinámico                          */
+  /* 5.4 GERENCIA+: Rascacielos Cónico Escalonado / Torre de Negocios           */
   /* -------------------------------------------------------------------------- */
   buildGerenciaArchitecture(group, line) {
     const color = line.colorThree;
 
-    // 4 Costillas Helicoidales Ascendentes (Espiral de Crecimiento Ágil)
-    for (let r = 0; r < 4; r++) {
-      const baseAngle = (r / 4) * Math.PI * 2;
-      const points = [];
-      for (let i = 0; i <= 24; i++) {
-        const t = i / 24;
-        const radius = 9.2 - t * 4.2;
-        const currentAngle = baseAngle + t * Math.PI * 0.85;
-        const x = Math.cos(currentAngle) * radius;
-        const y = 0.5 + t * 11.5;
-        const z = Math.sin(currentAngle) * radius;
-        points.push(new THREE.Vector3(x, y, z));
-      }
-      const curve = new THREE.CatmullRomCurve3(points);
-      const tubeGeo = new THREE.TubeGeometry(curve, 32, 0.22, 12, false);
-      const tubeMat = new THREE.MeshStandardMaterial({
-        color: 0x090e1c,
+    // Rascacielos Cónico de 3 Niveles Escalonados
+    const levels = [
+      { rTop: 7.8, rBot: 9.5, height: 4.2, y: 2.1 },
+      { rTop: 5.5, rBot: 7.5, height: 4.0, y: 6.2 },
+      { rTop: 3.2, rBot: 5.2, height: 3.8, y: 10.1 }
+    ];
+
+    levels.forEach((lvl) => {
+      const cylGeo = new THREE.CylinderGeometry(lvl.rTop, lvl.rBot, lvl.height, 28, 1, true);
+      const cylMat = new THREE.MeshPhysicalMaterial({
+        color: color,
         emissive: color,
-        emissiveIntensity: 0.5,
-        metalness: 0.9,
-        roughness: 0.15
+        emissiveIntensity: 0.3,
+        roughness: 0.1,
+        metalness: 0.5,
+        transmission: 0.8,
+        transparent: true,
+        opacity: 0.32,
+        side: THREE.DoubleSide
       });
-      const tube = new THREE.Mesh(tubeGeo, tubeMat);
-      group.add(tube);
-    }
+      const tier = new THREE.Mesh(cylGeo, cylMat);
+      tier.position.y = lvl.y;
+      group.add(tier);
 
-    // Membrana envolvente de cristal esmeralda aerodinámico
-    const coneGeo = new THREE.ConeGeometry(8.8, 12.0, 32, 1, true);
-    const coneMat = new THREE.MeshPhysicalMaterial({
-      color: color,
-      emissive: color,
-      emissiveIntensity: 0.35,
-      transparent: true,
-      opacity: 0.25,
-      roughness: 0.08,
-      transmission: 0.85,
-      side: THREE.DoubleSide
+      // Anillo de terraza iluminado
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(lvl.rTop - 0.2, lvl.rTop + 0.3, 32),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+      );
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.y = lvl.y + lvl.height / 2;
+      group.add(ring);
     });
-    const cone = new THREE.Mesh(coneGeo, coneMat);
-    cone.position.y = 6.2;
-    group.add(cone);
 
-    // Marquesina Cantilever en voladizo sobre el acceso
-    const canopyGeo = new THREE.BoxGeometry(6.5, 0.25, 4.5);
-    const canopyMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      metalness: 0.9,
-      roughness: 0.2
-    });
-    const canopy = new THREE.Mesh(canopyGeo, canopyMat);
-    canopy.position.set(0, 3.8, 8.6);
-    canopy.rotation.x = -0.22; // Inclinación moderna
-    group.add(canopy);
+    // Azotea con Helipuerto / Pista Ejecutiva de Drones
+    const pad = new THREE.Mesh(
+      new THREE.CircleGeometry(3.0, 24),
+      new THREE.MeshStandardMaterial({ color: 0x090e1c, metalness: 0.9 })
+    );
+    pad.rotation.x = -Math.PI / 2;
+    pad.position.y = 12.02;
+    group.add(pad);
 
-    const canopyTrim = new THREE.Mesh(
-      new THREE.BoxGeometry(6.6, 0.1, 0.2),
+    const padBorder = new THREE.Mesh(
+      new THREE.RingGeometry(2.7, 3.0, 24),
+      new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide })
+    );
+    padBorder.rotation.x = -Math.PI / 2;
+    padBorder.position.y = 12.04;
+    group.add(padBorder);
+
+    // Anillo de Ticker Financiero Holográfico que Gira a Media Altura
+    const tickerGeo = new THREE.TorusGeometry(8.2, 0.14, 8, 48);
+    const tickerMat = new THREE.MeshBasicMaterial({ color: 0x34d399 });
+    const tickerRing = new THREE.Mesh(tickerGeo, tickerMat);
+    tickerRing.rotation.x = Math.PI / 2;
+    tickerRing.position.y = 6.2;
+    group.add(tickerRing);
+
+    // Mástil de telecomunicaciones superior
+    const antenna = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.06, 0.15, 3.5, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    antenna.position.y = 13.8;
+    group.add(antenna);
+
+    // Portal de acceso corporativo
+    const portal = new THREE.Mesh(
+      new THREE.BoxGeometry(4.8, 0.4, 3.0),
+      new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.9 })
+    );
+    portal.position.set(0, 3.6, 9.2);
+    group.add(portal);
+
+    const portalBorder = new THREE.Mesh(
+      new THREE.BoxGeometry(5.0, 0.12, 0.2),
       new THREE.MeshBasicMaterial({ color: color })
     );
-    canopyTrim.position.set(0, 3.35, 10.6);
-    group.add(canopyTrim);
+    portalBorder.position.set(0, 3.6, 10.7);
+    group.add(portalBorder);
 
-    // Spire corporativo en la cúspide
-    const spireGeo = new THREE.CylinderGeometry(0.08, 0.3, 4.5, 8);
-    const spireMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const spire = new THREE.Mesh(spireGeo, spireMat);
-    spire.position.set(0, 14.0, 0);
-    group.add(spire);
+    this.dynamicArchitectures['gerencia'] = { tickerRing };
   }
 
   /* -------------------------------------------------------------------------- */
-  /* 5.5 ACTIVA TU IDEA: Hangar de Innovación Geodésico Hexagonal               */
+  /* 5.5 ACTIVA TU IDEA: Reactor Tokamak de Fusión e Innovación                */
   /* -------------------------------------------------------------------------- */
   buildActivaIdeaArchitecture(group, line) {
     const color = line.colorThree;
 
-    // Cúpula Geodésica de Paneles Hexagonales
-    const domeGeo = new THREE.SphereGeometry(9.0, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2);
-    const domeMat = new THREE.MeshPhysicalMaterial({
-      color: color,
+    // Gran Cámara Toroidal de Plasma (Cuerpo principal del Reactor)
+    const torusGeo = new THREE.TorusGeometry(6.8, 2.2, 20, 36);
+    const torusMat = new THREE.MeshPhysicalMaterial({
+      color: 0x0f172a,
       emissive: color,
-      emissiveIntensity: 0.4,
+      emissiveIntensity: 0.45,
+      roughness: 0.15,
+      metalness: 0.8,
       transparent: true,
-      opacity: 0.3,
-      roughness: 0.1,
-      transmission: 0.85,
-      flatShading: true,
+      opacity: 0.35,
       side: THREE.DoubleSide
     });
-    const dome = new THREE.Mesh(domeGeo, domeMat);
-    dome.position.y = 0.5;
-    group.add(dome);
+    const torus = new THREE.Mesh(torusGeo, torusMat);
+    torus.rotation.x = Math.PI / 2;
+    torus.position.y = 4.2;
+    group.add(torus);
 
-    // Cerchas de exoesqueleto de acero industrial expuestas
-    const trussMat = new THREE.MeshStandardMaterial({
-      color: 0x1e293b,
-      metalness: 0.9,
-      roughness: 0.2
-    });
+    // 6 Bobinas Magnéticas Superconductoras en Forma de 'D'
+    const coils = [];
+    for (let i = 0; i < 6; i++) {
+      const ang = (i / 6) * Math.PI * 2;
+      const coilGeo = new THREE.TorusGeometry(3.6, 0.35, 12, 28);
+      const coilMat = new THREE.MeshStandardMaterial({
+        color: 0x1e293b,
+        emissive: color,
+        emissiveIntensity: 0.3,
+        metalness: 0.9,
+        roughness: 0.2
+      });
+      const coil = new THREE.Mesh(coilGeo, coilMat);
+      coil.position.set(Math.cos(ang) * 6.8, 4.2, Math.sin(ang) * 6.8);
+      coil.rotation.y = -ang;
+      group.add(coil);
+      coils.push(coil);
+    }
 
-    // 4 Arbotantes exteriores robustos anclados a la base
-    const angles = [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4];
-    angles.forEach((ang) => {
-      const legGeo = new THREE.CylinderGeometry(0.22, 0.3, 9.5, 12);
-      const leg = new THREE.Mesh(legGeo, trussMat);
-      const x = Math.cos(ang) * 9.8;
-      const z = Math.sin(ang) * 9.8;
-      leg.position.set(x * 0.7, 4.0, z * 0.7);
-      leg.rotation.y = ang;
-      leg.rotation.z = (x > 0 ? 0.32 : -0.32);
-      group.add(leg);
-    });
-
-    // Anillo de coronación con cerchas en el ecuador
-    const ringGeo = new THREE.TorusGeometry(9.2, 0.15, 8, 12);
-    const ringMat = new THREE.MeshBasicMaterial({ color: color });
-    const midRing = new THREE.Mesh(ringGeo, ringMat);
-    midRing.rotation.x = Math.PI / 2;
-    midRing.position.y = 4.2;
-    group.add(midRing);
-
-    // Portal de Hangar Industrial de Innovación con Arco Doble
-    const portalGeo = new THREE.TorusGeometry(3.0, 0.25, 8, 16, Math.PI);
-    const portalMat = new THREE.MeshBasicMaterial({ color: color });
-    const portal = new THREE.Mesh(portalGeo, portalMat);
-    portal.position.set(0, 0.5, 9.0);
-    group.add(portal);
-
-    const portalInner = new THREE.Mesh(
-      new THREE.TorusGeometry(2.5, 0.15, 8, 16, Math.PI),
+    // Núcleo de Plasma Incandescente Central
+    const plasmaCore = new THREE.Mesh(
+      new THREE.SphereGeometry(1.6, 24, 24),
       new THREE.MeshBasicMaterial({ color: 0xffedd5 })
     );
-    portalInner.position.set(0, 0.5, 9.1);
-    group.add(portalInner);
+    plasmaCore.position.y = 4.2;
+    group.add(plasmaCore);
+
+    // Tuberías Criogénicas Exteriores con Válvulas Naranja
+    const pipeGeo = new THREE.TorusGeometry(9.6, 0.15, 8, 32);
+    const pipeMat = new THREE.MeshBasicMaterial({ color: color });
+    const pipe = new THREE.Mesh(pipeGeo, pipeMat);
+    pipe.rotation.x = Math.PI / 2;
+    pipe.position.y = 1.2;
+    group.add(pipe);
+
+    // Portal blindado de reactor
+    const portal = new THREE.Mesh(
+      new THREE.TorusGeometry(3.0, 0.3, 8, 20, Math.PI),
+      new THREE.MeshBasicMaterial({ color: color })
+    );
+    portal.position.set(0, 0.5, 9.2);
+    group.add(portal);
+
+    this.dynamicArchitectures['actividaidea'] = { plasmaCore, coils };
   }
 
   /* -------------------------------------------------------------------------- */
-  /* 5.6 LATIDO SOCIAL: Biocúpula Biomimética Orgánica (Pabellón Vivo)           */
+  /* 5.6 LATIDO SOCIAL: Biósfera Edén con Árbol de la Vida Biónico              */
   /* -------------------------------------------------------------------------- */
   buildLatidoSocialArchitecture(group, line) {
     const color = line.colorThree;
     const roseColor = 0xec4899;
 
-    // 6 Pétalos Orgánicos curvados que forman la biocúpula como flor de loto
-    const petalCount = 6;
-    for (let i = 0; i < petalCount; i++) {
-      const angle = (i / petalCount) * Math.PI * 2;
-      
-      // Omitir el frente para la entrada abierta
-      const isEntrance = (angle > Math.PI * 0.35 && angle < Math.PI * 0.65);
-      if (isEntrance) continue;
-
-      // Arco curvo de la costilla del pétalo
-      const petalCurve = new THREE.CubicBezierCurve3(
-        new THREE.Vector3(Math.cos(angle) * 9.5, 0.5, Math.sin(angle) * 9.5),
-        new THREE.Vector3(Math.cos(angle) * 11.0, 5.0, Math.sin(angle) * 11.0),
-        new THREE.Vector3(Math.cos(angle) * 5.0, 9.0, Math.sin(angle) * 5.0),
-        new THREE.Vector3(0, 10.5, 0)
-      );
-      const tubeGeo = new THREE.TubeGeometry(petalCurve, 24, 0.2, 12, false);
-      const tubeMat = new THREE.MeshStandardMaterial({
-        color: 0x064e3b,
-        emissive: color,
-        emissiveIntensity: 0.4,
-        metalness: 0.6,
-        roughness: 0.3
-      });
-      const tube = new THREE.Mesh(tubeGeo, tubeMat);
-      group.add(tube);
-    }
-
-    // Membrana translúcida biotécnica orgánica
-    const domeGeo = new THREE.SphereGeometry(8.9, 32, 18, 0, Math.PI * 2, 0, Math.PI / 2.1);
-    const domeMat = new THREE.MeshPhysicalMaterial({
-      color: roseColor,
-      emissive: color,
+    // Gran Cúpula Geodésica de la Biósfera Edén
+    const bioDomeGeo = new THREE.SphereGeometry(9.2, 32, 20, 0, Math.PI * 2, 0, Math.PI / 2);
+    const bioDomeMat = new THREE.MeshPhysicalMaterial({
+      color: 0x064e3b,
+      emissive: roseColor,
       emissiveIntensity: 0.3,
-      transparent: true,
-      opacity: 0.26,
-      roughness: 0.12,
+      roughness: 0.1,
       transmission: 0.85,
+      transparent: true,
+      opacity: 0.28,
       side: THREE.DoubleSide
     });
-    const dome = new THREE.Mesh(domeGeo, domeMat);
-    dome.position.y = 0.5;
-    group.add(dome);
+    const bioDome = new THREE.Mesh(bioDomeGeo, bioDomeMat);
+    bioDome.position.y = 0.5;
+    group.add(bioDome);
 
-    // Jardineras perimetrales con vegetación bio-luminiscente
-    for (let j = 0; j < 12; j++) {
-      const ang = (j / 12) * Math.PI * 2;
-      if (ang > Math.PI * 0.35 && ang < Math.PI * 0.65) continue;
+    // Estructura Geodésica Hexagonal Externa
+    const bioWire = new THREE.Mesh(
+      new THREE.SphereGeometry(9.28, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+      new THREE.MeshBasicMaterial({ color: 0x34d399, wireframe: true, transparent: true, opacity: 0.45 })
+    );
+    bioWire.position.y = 0.5;
+    group.add(bioWire);
 
-      const stalkGeo = new THREE.CylinderGeometry(0.04, 0.08, 1.2, 8);
-      const stalkMat = new THREE.MeshStandardMaterial({ color: 0x10b981 });
-      const stalk = new THREE.Mesh(stalkGeo, stalkMat);
-      const px = Math.cos(ang) * 9.7;
-      const pz = Math.sin(ang) * 9.7;
-      stalk.position.set(px, 1.0, pz);
-      stalk.rotation.z = (Math.random() - 0.5) * 0.3;
-      group.add(stalk);
+    // Tronco Central del Árbol de la Vida Biónico
+    const trunkGeo = new THREE.CylinderGeometry(0.8, 1.4, 7.5, 12);
+    const trunkMat = new THREE.MeshStandardMaterial({
+      color: 0x064e3b,
+      roughness: 0.3,
+      metalness: 0.6
+    });
+    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+    trunk.position.y = 4.0;
+    group.add(trunk);
 
-      // Flor/brote bio-luminiscente
-      const flowerGeo = new THREE.SphereGeometry(0.18, 8, 8);
-      const flowerMat = new THREE.MeshBasicMaterial({
-        color: j % 2 === 0 ? roseColor : 0x34d399
-      });
-      const flower = new THREE.Mesh(flowerGeo, flowerMat);
-      flower.position.set(px, 1.6, pz);
-      group.add(flower);
+    // 6 Ramas de Fibra Óptica que se Despliegan hacia el Techo de la Cúpula
+    const branches = [];
+    for (let i = 0; i < 6; i++) {
+      const ang = (i / 6) * Math.PI * 2;
+      const branchCurve = new THREE.CubicBezierCurve3(
+        new THREE.Vector3(0, 6.8, 0),
+        new THREE.Vector3(Math.cos(ang) * 3.5, 8.2, Math.sin(ang) * 3.5),
+        new THREE.Vector3(Math.cos(ang) * 6.5, 8.8, Math.sin(ang) * 6.5),
+        new THREE.Vector3(Math.cos(ang) * 8.6, 7.0, Math.sin(ang) * 8.6)
+      );
+      const branchTube = new THREE.Mesh(
+        new THREE.TubeGeometry(branchCurve, 16, 0.16, 8, false),
+        new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? roseColor : 0x34d399 })
+      );
+      group.add(branchTube);
+      branches.push(branchTube);
+
+      // Frutos/esferas de luz bio-luminiscentes en las puntas
+      const fruit = new THREE.Mesh(
+        new THREE.SphereGeometry(0.28, 8, 8),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
+      );
+      fruit.position.set(Math.cos(ang) * 8.6, 7.0, Math.sin(ang) * 8.6);
+      group.add(fruit);
     }
 
-    // Portal orgánico de bienvenida en arco vegetal
-    const archCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-2.8, 0.5, 9.0),
-      new THREE.Vector3(-2.2, 3.2, 9.1),
-      new THREE.Vector3(0, 4.0, 9.2),
-      new THREE.Vector3(2.2, 3.2, 9.1),
-      new THREE.Vector3(2.8, 0.5, 9.0)
-    ]);
-    const archTubeGeo = new THREE.TubeGeometry(archCurve, 20, 0.22, 12, false);
-    const archTubeMat = new THREE.MeshBasicMaterial({ color: roseColor });
-    const archTube = new THREE.Mesh(archTubeGeo, archTubeMat);
-    group.add(archTube);
+    // Estanque central bio-luminiscente con anillo en la base
+    const pondRing = new THREE.Mesh(
+      new THREE.RingGeometry(3.5, 3.8, 24),
+      new THREE.MeshBasicMaterial({ color: roseColor, side: THREE.DoubleSide })
+    );
+    pondRing.rotation.x = -Math.PI / 2;
+    pondRing.position.y = 0.52;
+    group.add(pondRing);
+
+    // Portal orgánico vegetal de bienvenida
+    const portal = new THREE.Mesh(
+      new THREE.TorusGeometry(3.0, 0.22, 12, 28, Math.PI),
+      new THREE.MeshBasicMaterial({ color: roseColor })
+    );
+    portal.position.set(0, 0.5, 9.2);
+    group.add(portal);
+
+    this.dynamicArchitectures['latidosocial'] = { trunk, branches };
   }
 
   buildGenericArchitecture(group, line) {
@@ -1854,5 +1849,36 @@ export class Environment {
         sign.position.y = sign.userData.baseY + Math.sin(elapsed * 1.8 + sign.userData.offset) * 0.16;
       }
     });
+
+    // 10.9 Animaciones Arquitectónicas de Nueva Generación
+    if (this.dynamicArchitectures) {
+      // NeuroMath: Flotación del prisma octaédrico
+      const nm = this.dynamicArchitectures['neuromath'];
+      if (nm && nm.floatingPrism) {
+        nm.floatingPrism.rotation.y += delta * 0.45;
+        nm.floatingPrism.rotation.x = Math.sin(elapsed * 0.8) * 0.12;
+        nm.floatingPrism.position.y = nm.basePrismY + Math.sin(elapsed * 1.6) * 0.35;
+      }
+
+      // Gerencia+: Rotación continua del ticker financiero
+      const ger = this.dynamicArchitectures['gerencia'];
+      if (ger && ger.tickerRing) {
+        ger.tickerRing.rotation.z += delta * 0.75;
+      }
+
+      // Activa tu Idea: Pulso del reactor de plasma
+      const idea = this.dynamicArchitectures['actividaidea'];
+      if (idea && idea.plasmaCore) {
+        const pScale = 1.0 + Math.sin(elapsed * 4.0) * 0.14;
+        idea.plasmaCore.scale.set(pScale, pScale, pScale);
+      }
+
+      // Comunicarte: Pulso del foco emisor
+      const com = this.dynamicArchitectures['comunicarte'];
+      if (com && com.focalEmitter) {
+        const fScale = 1.0 + Math.sin(elapsed * 5.0) * 0.18;
+        com.focalEmitter.scale.set(fScale, fScale, fScale);
+      }
+    }
   }
 }
