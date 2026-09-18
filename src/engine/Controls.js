@@ -55,6 +55,16 @@ export class Controls {
 
     this.currentZone = 'Ágora Central UNIMINUTO';
 
+    // Transición cinemática de vuelo suave entre domos
+    this.isTransitioning = false;
+    this.transStartPos = new THREE.Vector3();
+    this.transTargetPos = new THREE.Vector3();
+    this.transStartYaw = 0;
+    this.transTargetYaw = 0;
+    this.transStartPitch = 0;
+    this.transTargetPitch = 0;
+    this.transProgress = 0;
+
     this.initEvents();
     this.initMinimap();
   }
@@ -220,13 +230,28 @@ export class Controls {
     const loc = this.teleportLocations[index];
     if (!loc) return;
 
-    this.camera.position.copy(loc.pos);
+    let targetYaw = this.yaw;
+    let targetPitch = 0;
     if (loc.lookAt) {
       const dir = new THREE.Vector3().subVectors(loc.lookAt, loc.pos).normalize();
-      this.yaw = Math.atan2(-dir.x, -dir.z);
-      this.pitch = Math.asin(dir.y);
-      this.updateCameraRotation();
+      targetYaw = Math.atan2(-dir.x, -dir.z);
+      targetPitch = Math.asin(dir.y);
     }
+
+    // Normalizar diferencia de yaw para la ruta de giro más corta
+    let diffYaw = targetYaw - this.yaw;
+    while (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
+    while (diffYaw > Math.PI) diffYaw -= Math.PI * 2;
+    targetYaw = this.yaw + diffYaw;
+
+    this.transStartPos.copy(this.camera.position);
+    this.transTargetPos.copy(loc.pos);
+    this.transStartYaw = this.yaw;
+    this.transTargetYaw = targetYaw;
+    this.transStartPitch = this.pitch;
+    this.transTargetPitch = targetPitch;
+    this.transProgress = 0;
+    this.isTransitioning = true;
 
     this.currentZone = loc.name;
     if (this.zoneNameEl) this.zoneNameEl.textContent = loc.name;
@@ -336,6 +361,39 @@ export class Controls {
   }
 
   update(delta) {
+    // 1. Manejar transición cinemática suave si está activa
+    if (this.isTransitioning) {
+      // Si el usuario presiona teclas de movimiento manual, cancelar suavemente el vuelo
+      if (this.moveForward || this.moveBackward || this.moveLeft || this.moveRight) {
+        this.isTransitioning = false;
+      } else {
+        this.transProgress += delta * 1.35; // ~0.75 segundos de vuelo
+        if (this.transProgress >= 1.0) {
+          this.transProgress = 1.0;
+          this.isTransitioning = false;
+        }
+
+        // Curva de aceleración/desaceleración armónica (EaseInOutCubic)
+        const t = this.transProgress;
+        const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+        this.camera.position.lerpVectors(this.transStartPos, this.transTargetPos, ease);
+        // Elevación parabólica sutil que simula un sobrevuelo tipo dron
+        this.camera.position.y = 5.0 + Math.sin(ease * Math.PI) * 2.8;
+
+        this.yaw = THREE.MathUtils.lerp(this.transStartYaw, this.transTargetYaw, ease);
+        this.pitch = THREE.MathUtils.lerp(this.transStartPitch, this.transTargetPitch, ease);
+        this.updateCameraRotation();
+
+        if (this.camCoordsEl) {
+          this.camCoordsEl.textContent = `X: ${Math.round(this.camera.position.x)} | Z: ${Math.round(this.camera.position.z)}`;
+        }
+        this.checkInteractions();
+        this.drawMinimap();
+        return;
+      }
+    }
+
     // Movimiento física suave
     const speed = this.isSprinting ? 28 : 14;
     const friction = 10.0;
