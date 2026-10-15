@@ -1,11 +1,75 @@
 import { DUA_PROFILES } from './TransversalLines.js';
 
+const KNOWLEDGE_RULES = [
+  {
+    id: 'neuromath',
+    keywords: ['neuromath', 'redes', 'red neuronal', 'matemática', 'pérdida', 'loss', 'learning rate', 'regularización', 'overfitting'],
+    handler: () => `
+      <strong>Andamiaje Pedagógico — NeuroMath & IA:</strong><br>
+      1. <strong>Tasa de Aprendizaje (LR):</strong> Mantenerla entre <strong>0.04 y 0.08</strong>. Valores superiores a 0.18 inducen oscilación y divergencia del gradiente.<br>
+      2. <strong>Regularización L2:</strong> Configurar en torno a <strong>0.025</strong> para penalizar magnitudes excesivas de pesos y mitigar el sobreajuste.<br>
+      3. <strong>Optimizador:</strong> Emplear <strong>Adam</strong> por su estimación adaptativa de momentos de primer y segundo orden.
+    `
+  },
+  {
+    id: 'gerencia',
+    keywords: ['gerencia', 'ágil', 'agil', 'sprint', 'scrum', 'liderazgo', 'deuda técnica', 'backlog'],
+    handler: () => `
+      <strong>Estrategia de Liderazgo — Gerencia+:</strong><br>
+      - <strong>Gestión de Alcance:</strong> Ante solicitudes imprevistas, aplicar balance de compensaciones (trade-offs) priorizando el trabajo de mayor valor sin sobrecargar la capacidad.<br>
+      - <strong>Resolución de Bloqueos:</strong> Priorizar trabajo colaborativo (swarming) y seguridad psicológica sobre asignación individual de culpas.<br>
+      - <strong>Calidad:</strong> Respetar la Definición de Terminado (DoD) para no acumular deuda técnica en entregas apresuradas.
+    `
+  },
+  {
+    id: 'social',
+    keywords: ['social', 'comunitaria', 'latido', 'ciudadanía', 'voxcivitas', 'gobernanza', 'presupuesto'],
+    handler: () => `
+      <strong>Enfoque Comunitario — Latido Social:</strong><br>
+      - En proyectos sociales, la infraestructura física debe acompañarse de mediación comunitaria para garantizar apropiación ciudadana.<br>
+      - La gobernanza participativa maximiza la cohesión y equidad en la distribución del fondo comunitario.
+    `
+  },
+  {
+    id: 'dua',
+    keywords: ['dua', 'diseño universal', 'inclusión', 'accesibilidad', 'perfil'],
+    handler: () => `
+      <strong>Principios DUA aplicados en VirtuXperience:</strong><br>
+      1. <strong>Representación múltiple:</strong> Entorno tridimensional, síntesis de voz (TTS) y diagramas conceptuales.<br>
+      2. <strong>Acción y expresión:</strong> Navegación por teclado (WASD, atajos 0-6), minimapa interactivo y controles táctiles.<br>
+      3. <strong>Compromiso:</strong> Simuladores vivenciales con escenarios basados en toma de decisiones del contexto colombiano.
+    `
+  },
+  {
+    id: 'route',
+    keywords: ['ruta', 'recomiendas', 'empezar', 'iniciar', 'pasos', 'donde voy'],
+    handler: (profile) => {
+      if (profile === 'kinesthetic') {
+        return `
+          <strong>Recomendación según perfil Práctico/Kinestésico:</strong><br>
+          Inicia por las estaciones con simuladores vivenciales activos: <strong>Domo 2 (NeuroMath)</strong> o <strong>Domo 4 (Gerencia+)</strong>, donde interactúas directamente con variables y retroalimentación inmediata.
+        `;
+      }
+      if (profile === 'visual') {
+        return `
+          <strong>Recomendación según perfil Visual/Espacial:</strong><br>
+          Abre la matriz curricular (tecla M) para revisar el radar de competencias y explora los diagramas conceptuales en <strong>Comunicarte (Domo 1)</strong> y <strong>Latido Social (Domo 6)</strong>.
+        `;
+      }
+      return `
+        <strong>Recomendación según perfil Auditivo/Narrativo:</strong><br>
+        Comienza por <strong>Comunicarte (Domo 1)</strong> o <strong>VoxCivitas (Domo 3)</strong> utilizando el sintetizador de voz y los formatos sonoros de cada estación.
+      `;
+    }
+  }
+];
+
 export class AIAssistant {
   constructor(duaSystem, progressSystem) {
     this.dua = duaSystem;
     this.progress = progressSystem;
 
-    this.currentProfile = 'kinesthetic'; // Por defecto práctico/vivencial
+    this.currentProfile = 'kinesthetic';
     this.chatHistory = [];
 
     this.chatForm = document.getElementById('ai-chat-form');
@@ -21,14 +85,13 @@ export class AIAssistant {
     if (this.chatForm) {
       this.chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const text = this.chatInput.value.trim();
+        const text = this.chatInput ? this.chatInput.value.trim() : '';
         if (!text) return;
         this.handleUserQuery(text);
-        this.chatInput.value = '';
+        if (this.chatInput) this.chatInput.value = '';
       });
     }
 
-    // Botones de preguntas rápidas
     const quickBtns = document.querySelectorAll('.quick-prompt-btn');
     quickBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -37,7 +100,6 @@ export class AIAssistant {
       });
     });
 
-    // Botón recalibrar estilo DUA
     if (this.btnRecalibrate) {
       this.btnRecalibrate.addEventListener('click', () => {
         this.cycleDuaProfile();
@@ -55,14 +117,13 @@ export class AIAssistant {
       this.profileStyleEl.textContent = profileData.name;
     }
 
-    this.addBotMessage(`🔄 Has recalibrado tu perfil DUA a: <strong>${profileData.name}</strong>.<br>${profileData.recommendation}`);
+    this.addBotMessage(`Perfil DUA actualizado a: <strong>${profileData.name}</strong>.<br>${profileData.recommendation}`);
     this.dua.speak(`Perfil DUA actualizado a estilo ${profileData.name}.`);
   }
 
   handleUserQuery(query) {
     this.addUserMessage(query);
 
-    // Indicador de "pensando"
     const typingId = this.showTypingIndicator();
 
     setTimeout(() => {
@@ -70,109 +131,83 @@ export class AIAssistant {
       const response = this.generateAdaptiveResponse(query);
       this.addBotMessage(response);
       this.dua.speak(response.replace(/<[^>]*>?/gm, ''));
-    }, 600);
+    }, 350);
   }
 
   generateAdaptiveResponse(query) {
-    const q = query.toLowerCase();
+    const normalized = query.toLowerCase();
 
-    // 1. Pistas para NeuroMath
-    if (q.includes('neuromath') || q.includes('redes') || q.includes('matemática') || q.includes('pérdida')) {
-      return `
-        <strong>🧠 Andamiaje Adaptativo - NeuroMath & IA:</strong><br>
-        1. <strong>Tasa de Aprendizaje (LR):</strong> Manténla en el rango dulce entre <strong>0.04 y 0.08</strong>. Si supera 0.18, el gradiente oscilará y divergerá.<br>
-        2. <strong>Regularización L2:</strong> Configúrala cerca de <strong>0.025</strong> para castigar pesos gigantes y evitar el sobreajuste (overfitting).<br>
-        3. <strong>Optimizador:</strong> Selecciona <strong>Adam</strong>, pues ajusta adaptativamente el momento por cada parámetro.<br>
-        <em>¡Aplica estos parámetros en el simulador del Domo 2 para alcanzar más del 90% de precisión!</em>
-      `;
-    }
-
-    // 2. Gerencia+ y metodologías ágiles
-    if (q.includes('gerencia') || q.includes('ágil') || q.includes('sprint') || q.includes('scrum') || q.includes('liderazgo')) {
-      return `
-        <strong>💼 Estrategia de Liderazgo - Gerencia+:</strong><br>
-        En metodologías ágiles, el liderazgo no es coercitivo, sino de <strong>servicio (Servant Leadership)</strong>.<br>
-        - Cuando el cliente pide más alcance: No digas "no", aplica <em>Trade-offs</em> (renegociar prioridades manteniendo la capacidad sostenible).<br>
-        - Ante bloqueos técnicos: Fomenta la seguridad psicológica y el trabajo en enjambre (Swarming), nunca culpes al individuo.
-      `;
-    }
-
-    // 3. Recomendación de ruta según DUA
-    if (q.includes('ruta') || q.includes('recomiendas') || q.includes('empezar') || q.includes('iniciar')) {
-      if (this.currentProfile === 'kinesthetic') {
-        return `
-          <strong>🎯 Recomendación Personalizada (Perfil Vivencial/Práctico):</strong><br>
-          Dado tu estilo orientado a la acción, te sugiero teletransportarte directamente al <strong>Domo 2 (NeuroMath)</strong> o al <strong>Domo 4 (Gerencia+)</strong>. Allí podrás poner a prueba tus competencias en simuladores interactivos en tiempo real con retroalimentación inmediata.
-        `;
-      } else if (this.currentProfile === 'visual') {
-        return `
-          <strong>🎯 Recomendación Personalizada (Perfil Visual/Espacial):</strong><br>
-          Te recomiendo abrir el <strong>Árbol de Competencias (Tecla M)</strong> para explorar el Radar Hexagonal y visitar las pestañas de <strong>Diagramas Interactivos</strong> e infografías en Comunicarte y Latido Social.
-        `;
-      } else {
-        return `
-          <strong>🎯 Recomendación Personalizada (Perfil Auditivo/Narrativo):</strong><br>
-          Inicia tu recorrido en <strong>Comunicarte (Domo 1)</strong> o <strong>VoxCivitas (Domo 3)</strong> y reproduce los <strong>Podcasts Sonoros</strong> narrados por los mentores con el sintetizador de voz activado.
-        `;
+    for (const rule of KNOWLEDGE_RULES) {
+      const match = rule.keywords.some((kw) => normalized.includes(kw));
+      if (match) {
+        return rule.handler(this.currentProfile);
       }
     }
 
-    // 4. Explicación de DUA y UNIMINUTO
-    if (q.includes('dua') || q.includes('diseño universal') || q.includes('inclusión')) {
-      return `
-        <strong>♿ Principios del DUA en VirtuXperience:</strong><br>
-        El Diseño Universal para el Aprendizaje busca que ningún estudiante quede atrás mediante:<br>
-        1. <strong>Múltiples formas de representación:</strong> Entorno 3D, lector de voz (TTS), infografías visuales y podcasts sonoros.<br>
-        2. <strong>Múltiples formas de acción y expresión:</strong> Teclado completo, mouse, navegación táctil y atajos numéricos directos (0 al 6).<br>
-        3. <strong>Múltiples formas de implicación:</strong> Gamificación, desafíos del mundo real colombiano y retroalimentación formativa inmediata.
-      `;
-    }
-
-    // 5. Latido Social o Ciudadanía
-    if (q.includes('social') || q.includes('comunitaria') || q.includes('latido') || q.includes('ciudadanía') || q.includes('voxcivitas')) {
-      return `
-        <strong>❤️ Enfoque de Transformación Social:</strong><br>
-        En UNIMINUTO concebimos la responsabilidad social no como filantropía, sino como <strong>empoderamiento comunitario y justicia distributiva</strong>. En el simulador de Latido Social, recuerda que la infraestructura sin diálogo ciudadano genera elefantes blancos. ¡Equilibra la inversión!
-      `;
-    }
-
-    // Respuesta adaptativa contextual general
     return `
-      Como tu tutor adaptativo, te recuerdo que en <strong>VirtuXperience</strong> superamos la memorización para enfocarnos en la <strong>aplicación directa de la competencia</strong>.<br>
-      Puedes teletransportarte a cualquiera de los 6 Domos temáticos utilizando los botones superiores o las teclas <strong>1 a 6</strong>. ¿Deseas andamiaje sobre alguna simulación en específico?
+      El sistema cuenta con 6 domos transversales accesibles mediante los accesos directos numéricos (0 al 6).<br>
+      Puedes consultar andamiaje sobre: <em>NeuroMath</em>, <em>Gerencia Ágil</em>, <em>Latido Social</em>, <em>Principios DUA</em> o solicitar una <em>recomendación de ruta</em>.
     `;
   }
 
   addUserMessage(text) {
+    if (!this.chatHistoryEl) return;
+
     const msg = document.createElement('div');
     msg.className = 'chat-msg user-msg';
-    msg.innerHTML = `
-      <div class="msg-avatar">👤</div>
-      <div class="msg-content"><p>${text}</p></div>
-    `;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.textContent = '👤';
+
+    const content = document.createElement('div');
+    content.className = 'msg-content';
+
+    const p = document.createElement('p');
+    p.textContent = text; // Previene inyección XSS de forma estricta
+
+    content.appendChild(p);
+    msg.appendChild(avatar);
+    msg.appendChild(content);
+
     this.chatHistoryEl.appendChild(msg);
     this.chatHistoryEl.scrollTop = this.chatHistoryEl.scrollHeight;
   }
 
   addBotMessage(html) {
+    if (!this.chatHistoryEl) return;
+
     const msg = document.createElement('div');
     msg.className = 'chat-msg bot-msg';
-    msg.innerHTML = `
-      <div class="msg-avatar">🤖</div>
-      <div class="msg-content"><p>${html}</p></div>
-    `;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.textContent = '🤖';
+
+    const content = document.createElement('div');
+    content.className = 'msg-content';
+
+    const p = document.createElement('p');
+    p.innerHTML = html; // Respuestas internas curadas del sistema
+
+    content.appendChild(p);
+    msg.appendChild(avatar);
+    msg.appendChild(content);
+
     this.chatHistoryEl.appendChild(msg);
     this.chatHistoryEl.scrollTop = this.chatHistoryEl.scrollHeight;
   }
 
   showTypingIndicator() {
-    const id = 'typing-' + Date.now();
+    if (!this.chatHistoryEl) return null;
+
+    const id = `typing-${Date.now()}`;
     const msg = document.createElement('div');
     msg.id = id;
     msg.className = 'chat-msg bot-msg';
     msg.innerHTML = `
       <div class="msg-avatar">🤖</div>
-      <div class="msg-content"><p style="color:var(--text-dim);"><em>VirtuMentor está analizando tu perfil pedagógico...</em></p></div>
+      <div class="msg-content"><p style="color:var(--text-dim);"><em>Consultando base de conocimiento curricular...</em></p></div>
     `;
     this.chatHistoryEl.appendChild(msg);
     this.chatHistoryEl.scrollTop = this.chatHistoryEl.scrollHeight;
@@ -180,6 +215,7 @@ export class AIAssistant {
   }
 
   removeTypingIndicator(id) {
+    if (!id) return;
     const el = document.getElementById(id);
     if (el) el.remove();
   }

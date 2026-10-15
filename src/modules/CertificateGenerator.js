@@ -1,3 +1,5 @@
+import { generateCertificateHash } from '../utils/crypto.js';
+
 export class CertificateGenerator {
   constructor(progressSystem, audioSystem) {
     this.progress = progressSystem;
@@ -8,6 +10,10 @@ export class CertificateGenerator {
     this.modal = document.getElementById('modal-certificate');
     this.nameEl = document.getElementById('cert-student-name');
     this.hashEl = document.getElementById('cert-hash-code');
+    this.dateEl = document.getElementById('cert-issue-date');
+
+    this.studentName = 'Estudiante VirtuXperience';
+    this.currentHash = null;
 
     this.initEvents();
   }
@@ -22,23 +28,32 @@ export class CertificateGenerator {
     }
   }
 
-  openCertificate() {
+  async openCertificate() {
     this.audio.playChime();
 
-    // Generar o recuperar hash único
-    const hash = 'VX-2026-' + Math.random().toString(16).substring(2, 8).toUpperCase();
-    if (this.hashEl) this.hashEl.textContent = `HASH: ${hash}`;
-
-    // Permitir ingresar nombre si es el default
-    if (this.nameEl && (this.nameEl.textContent.includes('Destacado') || !this.studentName)) {
-      const inputName = prompt('Ingresa tu nombre completo para la expedición oficial del diploma:', 'Kevin Felipe Gaitán Rodríguez');
+    if (this.nameEl && (this.nameEl.textContent.includes('Destacado') || this.studentName === 'Estudiante VirtuXperience')) {
+      const inputName = prompt('Nombre completo del estudiante para expedición del certificado:', 'Kevin Felipe Gaitán Rodríguez');
       if (inputName && inputName.trim()) {
         this.studentName = inputName.trim();
         this.nameEl.textContent = this.studentName;
       }
     }
 
-    if (this.modal) this.modal.classList.remove('hidden');
+    const today = new Date().toISOString().split('T')[0];
+    if (this.dateEl) {
+      this.dateEl.textContent = today;
+    }
+
+    const payload = `${this.studentName}|${today}|${this.progress.xp}|${this.progress.rank}`;
+    this.currentHash = await generateCertificateHash(payload);
+
+    if (this.hashEl) {
+      this.hashEl.textContent = `HASH: ${this.currentHash}`;
+    }
+
+    if (this.modal) {
+      this.modal.classList.remove('hidden');
+    }
   }
 
   printCertificate() {
