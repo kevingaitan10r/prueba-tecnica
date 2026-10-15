@@ -109,15 +109,25 @@ Disponible en: `http://localhost:5174`
 npm run build
 ```
 
-### 5. Ejecución como Aplicación de Escritorio
+### 5. Ejecución Rápida (1 solo clic)
+
+#### En Windows:
+- **Opción A (Aplicación de Escritorio):** Haz doble clic en `start-windows.bat`. Si no tienes dependencias instaladas, las descargará automáticamente y abrirá la aplicación. Si tu equipo tiene alguna restricción con Electron, abrirá el navegador automáticamente.
+- **Opción B (Navegador Web directo):** Haz doble clic en `iniciar-navegador.bat` para iniciar el servidor local y abrir la experiencia directamente en Chrome o Edge.
+
+#### En macOS / Linux:
 ```bash
-# En macOS / Linux
 ./run_virtuxperience.sh
+```
 
-# En Windows
-start-windows.bat
+---
 
-# O mediante npm
+### 6. Ejecución Manual por Terminal (Opcional)
+```bash
+# Modo desarrollo con recarga en caliente
+npm run dev
+
+# Compilar y lanzar aplicación de escritorio
 npm run app
 ```
 
