@@ -1,7 +1,4 @@
-/**
- * Simulador Práctico Vivencial: Gerencia+
- * Misión Sprint Ágil y Liderazgo Estratégico en Crisis
- */
+import { applyGerenciaEffects } from './scoring.js';
 
 export class GerenciaSim {
   constructor(progressSystem, audioSystem, duaSystem) {
@@ -24,18 +21,18 @@ export class GerenciaSim {
         options: [
           {
             text: 'Rechazar tajantemente la solicitud y cerrar el backlog sin diálogo.',
-            effects: { velocity: 0, morale: +5, budget: -15 },
-            feedback: 'Mantuviste el foco pero deterioraste la relación de confianza con el cliente y el valor de negocio.'
+            effects: { velocity: 0, morale: 5, budget: -15 },
+            feedback: 'Se mantuvo el foco pero se debilitó la relación con el cliente y la entrega de valor.'
           },
           {
             text: 'Aceptar todo y exigir al equipo hacer horas extra durante el fin de semana.',
-            effects: { velocity: +20, morale: -35, budget: -10 },
-            feedback: 'Aumentaste la entrega aparente pero generaste riesgo de burnout y alta rotación de talento.'
+            effects: { velocity: 20, morale: -35, budget: -10 },
+            feedback: 'Aumentó la velocidad aparente a costa de sobrecarga del equipo y riesgo de rotación.'
           },
           {
-            text: 'Aplicar negociación ágil: intercambiar historias de menor prioridad (Trade-off MoSCoW) manteniendo la capacidad sostenible.',
-            effects: { velocity: +15, morale: +10, budget: +10 },
-            feedback: '¡Excelente decisión! Protegiste el ritmo sostenible del equipo y alineaste el valor entregado con el cliente.'
+            text: 'Aplicar negociación ágil: intercambiar historias de menor prioridad manteniendo el ritmo sostenible.',
+            effects: { velocity: 15, morale: 10, budget: 10 },
+            feedback: 'Decisión equilibrada: se protegió la capacidad sostenible del equipo y se priorizó valor continuo.'
           }
         ]
       },
@@ -45,14 +42,14 @@ export class GerenciaSim {
         desc: 'El desarrollador senior reporta un fallo de arquitectura que retrasa el 60% del sprint backlog.',
         options: [
           {
-            text: 'Organizar una sesión de Pair Programming y Swarming (todo el equipo concentrado en remover el bloqueo).',
-            effects: { velocity: +15, morale: +15, budget: 0 },
-            feedback: '¡Cultura ágil pura! La colaboración colectiva resolvió el problema rápidamente elevando la cohesión del equipo.'
+            text: 'Organizar una sesión de swarming con el equipo enfocado en resolver el bloqueo.',
+            effects: { velocity: 15, morale: 15, budget: 0 },
+            feedback: 'Resolución colectiva efectiva: incrementó la cohesión técnica y resolvió el impedimento a tiempo.'
           },
           {
-            text: 'Asignarle la culpa en la daily y pedirle que lo resuelva solo.',
+            text: 'Señalar responsabilidades individuales en la daily y exigir resolución aislada.',
             effects: { velocity: -20, morale: -30, budget: -10 },
-            feedback: 'Destruiste la seguridad psicológica del equipo, violando los valores ágiles.'
+            feedback: 'Deterioró la seguridad psicológica del equipo y prolongó el bloqueo técnico.'
           }
         ]
       },
@@ -63,36 +60,35 @@ export class GerenciaSim {
         options: [
           {
             text: 'Omitir pruebas y entregar rápido con deuda técnica alta.',
-            effects: { velocity: +10, morale: -10, budget: -30 },
-            feedback: 'La deuda técnica explotará en producción, aumentando costos de soporte a largo plazo.'
+            effects: { velocity: 10, morale: -10, budget: -30 },
+            feedback: 'La deuda técnica no gestionada incrementa el costo de mantenimiento y fallos en producción.'
           },
           {
-            text: 'Mantener la Definición de Terminado (DoD) estricta y entregar solo lo probado con calidad.',
-            effects: { velocity: +5, morale: +15, budget: +15 },
-            feedback: '¡Integridad profesional! La Definición de Terminado garantiza software funcional y sostenible.'
+            text: 'Mantener la Definición de Terminado (DoD) estricta y entregar solo componentes validados.',
+            effects: { velocity: 5, morale: 15, budget: 15 },
+            feedback: 'Apego a la calidad del software: garantiza entregables estables y previene retrabajos.'
           }
         ]
       },
       {
-        stepPill: 'Evento 4 de 4: Sprint Retrospective',
+        stepPill: 'Evento 4 de 4: Retrospectiva del Sprint',
         title: 'Inspección y Adaptación Final',
         desc: 'El sprint finalizó. ¿Qué acción de mejora continua priorizarás para el siguiente ciclo?',
         options: [
           {
-            text: 'Automatizar el pipeline de despliegue continuo (CI/CD) para reducir fricción en entregas.',
-            effects: { velocity: +20, morale: +15, budget: +10 },
-            feedback: '¡Visión estratégica! La automatización libera al equipo para enfocarse en valor de negocio.'
+            text: 'Automatizar el pipeline de integración continua (CI/CD) para reducir fricción de despliegue.',
+            effects: { velocity: 20, morale: 15, budget: 10 },
+            feedback: 'Visión estratégica de ingeniería: la automatización reduce errores manuales y estabiliza entregas.'
           },
           {
-            text: 'Saltar la retrospectiva para empezar a programar de inmediato.',
+            text: 'Omitir la retrospectiva para comenzar a codificar de inmediato.',
             effects: { velocity: -10, morale: -15, budget: -10 },
-            feedback: 'Sin retrospectiva no hay agilidad: el equipo repetirá los mismos errores.'
+            feedback: 'Sin espacios de inspección y adaptación se pierden oportunidades sistemáticas de mejora.'
           }
         ]
       }
     ];
 
-    this.cardContainer = document.getElementById('gerencia-event-card');
     this.stepPill = document.getElementById('gerencia-step-pill');
     this.eventTitle = document.getElementById('gerencia-event-title');
     this.eventDesc = document.getElementById('gerencia-event-desc');
@@ -150,18 +146,15 @@ export class GerenciaSim {
 
   handleOptionSelect(opt) {
     this.audio.playClick();
-    this.stats.velocity = Math.max(10, Math.min(100, this.stats.velocity + opt.effects.velocity));
-    this.stats.morale = Math.max(10, Math.min(100, this.stats.morale + opt.effects.morale));
-    this.stats.budget = Math.max(10, Math.min(100, this.stats.budget + opt.effects.budget));
+    this.stats = applyGerenciaEffects(this.stats, opt.effects);
 
     this.updateGauges();
     this.dua.speak(opt.feedback);
 
-    // Mostrar feedback breve
     if (this.optionsContainer) {
       this.optionsContainer.innerHTML = `
         <div class="sim-ai-eval">
-          <div class="feedback-badge">Resultado de tu Decisión Gerencial</div>
+          <div class="feedback-badge">Resultado de la Decisión</div>
           <p>${opt.feedback}</p>
           <button id="btn-next-event" class="btn-primary glow-btn mt-3">Continuar al Siguiente Evento &rarr;</button>
         </div>
@@ -177,20 +170,20 @@ export class GerenciaSim {
   }
 
   renderCompletion() {
-    if (this.stepPill) this.stepPill.textContent = 'Sprint Concluido Exitosamente';
-    if (this.eventTitle) this.eventTitle.textContent = '🎉 Evaluación de Liderazgo Ágil Gerencia+';
+    if (this.stepPill) this.stepPill.textContent = 'Sprint Finalizado';
+    if (this.eventTitle) this.eventTitle.textContent = 'Evaluación de Liderazgo Ágil Gerencia+';
     if (this.eventDesc) {
       this.eventDesc.innerHTML = `
-        Has completado el ciclo de toma de decisiones. Tu equipo alcanzó una velocidad de <strong>${this.stats.velocity} pts</strong>, 
-        una moral del <strong>${this.stats.morale}%</strong> y un balance de calidad de <strong>${this.stats.budget}%</strong>.
+        Ciclo de toma de decisiones concluido: velocidad final de <strong>${this.stats.velocity} pts</strong>, 
+        moral del equipo en <strong>${this.stats.morale}%</strong> y balance de calidad en <strong>${this.stats.budget}%</strong>.
       `;
     }
 
     if (this.optionsContainer) {
       this.optionsContainer.innerHTML = `
         <div class="sim-ai-eval">
-          <div class="feedback-badge">Dictamen del Comité Evaluador UNIMINUTO</div>
-          <p>Has demostrado competencia transversal en Metodologías Ágiles y Liderazgo Situacional, aplicando negociación colaborativa y preservando el bienestar de tu equipo.</p>
+          <div class="feedback-badge">Evaluación de Competencia</div>
+          <p>Has demostrado criterio en negociación ágil, gestión de impedimentos técnicos y preservación del ritmo sostenible de trabajo.</p>
         </div>
       `;
     }
@@ -208,7 +201,7 @@ export class GerenciaSim {
 
     if (this.btnClaim) {
       this.btnClaim.disabled = true;
-      this.btnClaim.textContent = '✅ Competencia Acreditada';
+      this.btnClaim.textContent = 'Competencia Acreditada';
     }
 
     const modal = document.getElementById('modal-sim-gerencia');

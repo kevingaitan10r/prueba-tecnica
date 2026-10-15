@@ -1,7 +1,4 @@
-/**
- * Simulador Práctico Vivencial: NeuroMath & IA
- * Laboratorio de Optimización Numérica y Redes Neuronales
- */
+import { evaluateNeuroMath } from './scoring.js';
 
 export class NeuroMathSim {
   constructor(progressSystem, audioSystem, duaSystem) {
@@ -47,7 +44,7 @@ export class NeuroMathSim {
 
     if (this.layerSlider) {
       this.layerSlider.addEventListener('input', (e) => {
-        const val = parseInt(e.target.value);
+        const val = parseInt(e.target.value, 10);
         if (this.layerVal) this.layerVal.textContent = `${val} capas (${val * 16} nodos)`;
       });
     }
@@ -63,75 +60,39 @@ export class NeuroMathSim {
 
   runSimulation() {
     this.audio.playClick();
-    const lr = parseFloat(this.lrSlider.value);
-    const reg = parseFloat(this.regSlider.value);
-    const layers = parseInt(this.layerSlider.value);
-    const optimizer = this.optimizerSelect.value;
+    const lr = parseFloat(this.lrSlider ? this.lrSlider.value : 0.05);
+    const reg = parseFloat(this.regSlider ? this.regSlider.value : 0.02);
+    const layers = parseInt(this.layerSlider ? this.layerSlider.value : 4, 10);
+    const optimizer = this.optimizerSelect ? this.optimizerSelect.value : 'adam';
 
-    let accuracy = 70;
-    let loss = 0.65;
-    let generalization = 'Estable';
-    let feedback = '';
+    const result = evaluateNeuroMath({ lr, reg, layers, optimizer });
 
-    // Evaluación matemática heurística del modelo
-    if (lr > 0.18) {
-      // Divergencia por gradiente excesivo
-      accuracy = Math.max(45, 60 - (lr - 0.18) * 100);
-      loss = 1.45;
-      generalization = 'Divergencia (Gradiente Explosivo)';
-      feedback = '⚠️ La tasa de aprendizaje es demasiado alta. El descenso de gradiente salta los mínimos locales y el modelo oscila sin converger.';
-    } else if (lr < 0.015) {
-      // Convergencia lenta / estancamiento
-      accuracy = 74;
-      loss = 0.52;
-      generalization = 'Subajuste (Underfitting)';
-      feedback = '⚠️ Tasa de aprendizaje excesivamente baja. El modelo avanza con extrema lentitud y no logra aprender los patrones complejos.';
-    } else if (layers >= 6 && reg < 0.01) {
-      // Sobreajuste
-      accuracy = 94; // alta en train pero mala generalización
-      loss = 0.12;
-      generalization = 'Sobreajuste Severo (Overfitting)';
-      feedback = '⚠️ Muchas capas ocultas sin regularización suficiente: la red memorizó los datos de entrenamiento pero fallará con nuevos estudiantes.';
-    } else {
-      // Rango óptimo
-      let optBonus = optimizer === 'adam' ? 5 : (optimizer === 'rmsprop' ? 3 : 0);
-      let regBonus = (reg >= 0.015 && reg <= 0.045) ? 6 : -2;
-      accuracy = Math.min(97, 85 + optBonus + regBonus + (layers >= 3 && layers <= 5 ? 4 : 0));
-      loss = (0.24 - (accuracy - 85) * 0.008).toFixed(3);
-      generalization = 'Excelente (Óptima Generalización)';
-      feedback = '✅ ¡Excelente configuración! El modelo alcanza alta capacidad predictiva y generaliza correctamente respetando el sesgo inductivo.';
-    }
+    if (this.metricAcc) this.metricAcc.textContent = `${result.accuracy}%`;
+    if (this.metricLoss) this.metricLoss.textContent = `${result.loss}`;
+    if (this.metricGen) this.metricGen.textContent = result.generalization;
+    if (this.feedbackText) this.feedbackText.textContent = result.feedback;
 
-    // Renderizar métricas
-    if (this.metricAcc) this.metricAcc.textContent = `${accuracy}%`;
-    if (this.metricLoss) this.metricLoss.textContent = `${loss}`;
-    if (this.metricGen) this.metricGen.textContent = generalization;
-    if (this.feedbackText) this.feedbackText.textContent = feedback;
+    this.dua.speak(result.feedback);
+    this.drawLossCurve(result.accuracy, result.loss);
 
-    this.dua.speak(feedback);
-    this.drawLossCurve(accuracy, parseFloat(loss));
-
-    // Habilitar reclamo si logró al menos 88% de precisión y generalización adecuada
-    if (accuracy >= 88 && generalization.startsWith('Excelente')) {
-      if (this.btnClaim) this.btnClaim.disabled = false;
-    } else {
-      if (this.btnClaim) this.btnClaim.disabled = true;
+    if (this.btnClaim) {
+      this.btnClaim.disabled = !result.isSuccess;
     }
   }
 
   drawLossCurve(accuracy, lossVal) {
-    if (!this.ctx) return;
+    if (!this.ctx || !this.chartCanvas) return;
     const ctx = this.ctx;
     const w = this.chartCanvas.width;
     const h = this.chartCanvas.height;
 
     ctx.clearRect(0, 0, w, h);
 
-    // Fondo y ejes
+    // Fondo y cuadrícula
     ctx.fillStyle = '#060913';
     ctx.fillRect(0, 0, w, h);
 
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.lineWidth = 1;
     for (let y = 30; y < h; y += 40) {
       ctx.beginPath();
@@ -140,7 +101,7 @@ export class NeuroMathSim {
       ctx.stroke();
     }
 
-    // Curva de Pérdida (Loss - Violeta)
+    // Curva de pérdida
     ctx.strokeStyle = '#8b5cf6';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -150,13 +111,12 @@ export class NeuroMathSim {
     for (let i = 1; i <= steps; i++) {
       const x = 40 + (i / steps) * (w - 70);
       const decay = Math.exp(-i * 0.12);
-      const noise = (Math.random() - 0.5) * 6;
+      const noise = (Math.sin(i * 1.5) * 2);
       const y = h - 30 - ((1 - decay) * (h - 90)) * (accuracy / 100) + noise;
       ctx.lineTo(x, y);
     }
     ctx.stroke();
 
-    // Leyenda
     ctx.fillStyle = '#8b5cf6';
     ctx.font = 'bold 11px Outfit, sans-serif';
     ctx.fillText('Curva de Aprendizaje y Pérdida', 40, 22);
@@ -170,7 +130,7 @@ export class NeuroMathSim {
 
     if (this.btnClaim) {
       this.btnClaim.disabled = true;
-      this.btnClaim.textContent = '✅ Competencia Acreditada';
+      this.btnClaim.textContent = 'Competencia Acreditada';
     }
 
     const modal = document.getElementById('modal-sim-neuromath');

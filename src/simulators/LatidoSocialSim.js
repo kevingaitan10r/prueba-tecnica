@@ -1,7 +1,4 @@
-/**
- * Simulador Práctico Vivencial: Latido Social & VoxCivitas
- * Laboratorio de Transformación Comunitaria y Diagnóstico Participativo
- */
+import { evaluateSocialImpact } from './scoring.js';
 
 export class LatidoSocialSim {
   constructor(progressSystem, audioSystem, duaSystem) {
@@ -31,27 +28,27 @@ export class LatidoSocialSim {
   }
 
   initEvents() {
-    const updateBudget = () => {
-      const infra = parseInt(this.sliderInfra.value) || 0;
-      const med = parseInt(this.sliderMediation.value) || 0;
-      const eco = parseInt(this.sliderEco.value) || 0;
+    const updateBudgetDisplay = () => {
+      const infra = parseInt(this.sliderInfra ? this.sliderInfra.value : 0, 10) || 0;
+      const med = parseInt(this.sliderMediation ? this.sliderMediation.value : 0, 10) || 0;
+      const eco = parseInt(this.sliderEco ? this.sliderEco.value : 0, 10) || 0;
 
-      if (this.lblInfra) this.lblInfra.textContent = infra;
-      if (this.lblMediation) this.lblMediation.textContent = med;
-      if (this.lblEco) this.lblEco.textContent = eco;
+      if (this.lblInfra) this.lblInfra.textContent = String(infra);
+      if (this.lblMediation) this.lblMediation.textContent = String(med);
+      if (this.lblEco) this.lblEco.textContent = String(eco);
 
       const total = infra + med + eco;
       const remaining = 100 - total;
 
       if (this.pointsLeft) {
-        this.pointsLeft.textContent = remaining;
+        this.pointsLeft.textContent = String(remaining);
         this.pointsLeft.style.color = remaining === 0 ? '#10b981' : (remaining < 0 ? '#ef4444' : '#f59e0b');
       }
     };
 
-    if (this.sliderInfra) this.sliderInfra.addEventListener('input', updateBudget);
-    if (this.sliderMediation) this.sliderMediation.addEventListener('input', updateBudget);
-    if (this.sliderEco) this.sliderEco.addEventListener('input', updateBudget);
+    if (this.sliderInfra) this.sliderInfra.addEventListener('input', updateBudgetDisplay);
+    if (this.sliderMediation) this.sliderMediation.addEventListener('input', updateBudgetDisplay);
+    if (this.sliderEco) this.sliderEco.addEventListener('input', updateBudgetDisplay);
 
     if (this.btnSimulate) {
       this.btnSimulate.addEventListener('click', () => this.simulateImpact());
@@ -64,42 +61,28 @@ export class LatidoSocialSim {
 
   simulateImpact() {
     this.audio.playClick();
-    const infra = parseInt(this.sliderInfra.value) || 0;
-    const med = parseInt(this.sliderMediation.value) || 0;
-    const eco = parseInt(this.sliderEco.value) || 0;
-    const gov = this.selectGov.value;
+    const infra = parseInt(this.sliderInfra ? this.sliderInfra.value : 0, 10) || 0;
+    const mediation = parseInt(this.sliderMediation ? this.sliderMediation.value : 0, 10) || 0;
+    const eco = parseInt(this.sliderEco ? this.sliderEco.value : 0, 10) || 0;
+    const governance = this.selectGov ? this.selectGov.value : 'participative';
 
-    const total = infra + med + eco;
-    if (total > 100) {
-      alert('⚠️ Has excedido las 100 unidades del fondo comunitario disponible.');
+    const result = evaluateSocialImpact({ infra, mediation, eco, governance });
+
+    if (result.error === 'EXCEEDED_BUDGET') {
+      alert('El presupuesto total asignado supera las 100 unidades permitidas.');
       return;
     }
 
-    // Algoritmo de impacto social multidimensional
-    let govBonusCohesion = gov === 'participative' ? 25 : (gov === 'delegated' ? 5 : -10);
-    let govBonusEquity = gov === 'participative' ? 20 : (gov === 'delegated' ? 0 : -15);
+    if (this.kpiCohesion) this.kpiCohesion.textContent = `${result.cohesion}%`;
+    if (this.kpiEco) this.kpiEco.textContent = `${result.environmental}%`;
+    if (this.kpiEquity) this.kpiEquity.textContent = `${result.equity}%`;
 
-    let cohesion = Math.min(98, Math.round(med * 1.5 + infra * 0.4 + govBonusCohesion));
-    let environmental = Math.min(96, Math.round(eco * 1.6 + infra * 0.5 + 10));
-    let equity = Math.min(95, Math.round(med * 1.1 + infra * 0.8 + govBonusEquity));
+    if (this.evalText) this.evalText.textContent = result.feedback;
+    this.dua.speak(result.feedback);
 
-    if (this.kpiCohesion) this.kpiCohesion.textContent = `${cohesion}%`;
-    if (this.kpiEco) this.kpiEco.textContent = `${environmental}%`;
-    if (this.kpiEquity) this.kpiEquity.textContent = `${equity}%`;
-
-    let feedback = '';
-    const isSuccess = cohesion >= 80 && environmental >= 75 && equity >= 78;
-
-    if (isSuccess) {
-      feedback = '🌟 ¡Excelente visión de desarrollo humano integral! Tu distribución equilibró la necesidad física inmediata con el tejido social y la sostenibilidad ecológica a largo plazo, bajo gobernanza comunitaria.';
-      if (this.btnClaim) this.btnClaim.disabled = false;
-    } else {
-      feedback = '⚠️ El plan presenta desbalances: asegúrate de no descuidar las mesas de diálogo ni la sostenibilidad ambiental, y prioriza la gobernanza participativa.';
-      if (this.btnClaim) this.btnClaim.disabled = true;
+    if (this.btnClaim) {
+      this.btnClaim.disabled = !result.isSuccess;
     }
-
-    if (this.evalText) this.evalText.textContent = feedback;
-    this.dua.speak(feedback);
   }
 
   claimReward() {
@@ -110,7 +93,7 @@ export class LatidoSocialSim {
 
     if (this.btnClaim) {
       this.btnClaim.disabled = true;
-      this.btnClaim.textContent = '✅ Competencia Acreditada';
+      this.btnClaim.textContent = 'Competencia Acreditada';
     }
 
     const modal = document.getElementById('modal-sim-social');

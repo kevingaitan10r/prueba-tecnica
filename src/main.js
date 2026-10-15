@@ -18,29 +18,22 @@ class App {
   }
 
   init() {
-    console.log('🚀 Inicializando UNIMINUTO VirtuXperience 3D...');
-
-    // 1. Motores base
     this.audioSystem = new AudioSystem();
     this.duaSystem = new DuaAccessibility(this.audioSystem);
     this.progressSystem = new ProgressSystem(this.audioSystem, this.duaSystem);
 
-    // 2. Motor 3D Three.js
     this.world = new World('webgl-container');
     this.environment = new Environment(this.world);
     this.world.addUpdatable(this.environment);
 
-    // 3. Motores pedagógicos y narrativos
     this.narrativeEngine = new NarrativeEngine(this.audioSystem, this.duaSystem, this.progressSystem);
     this.aiAssistant = new AIAssistant(this.duaSystem, this.progressSystem);
     this.certificateGenerator = new CertificateGenerator(this.progressSystem, this.audioSystem);
 
-    // 4. Simuladores vivenciales
     this.simNeuroMath = new NeuroMathSim(this.progressSystem, this.audioSystem, this.duaSystem);
     this.simGerencia = new GerenciaSim(this.progressSystem, this.audioSystem, this.duaSystem);
     this.simLatidoSocial = new LatidoSocialSim(this.progressSystem, this.audioSystem, this.duaSystem);
 
-    // 5. Controles de navegación interactiva
     this.controls = new Controls(
       this.world,
       this.environment,
@@ -49,65 +42,63 @@ class App {
     );
     this.world.addUpdatable(this.controls);
 
-    // 6. Configurar UI global y modales
-    this.setupGlobalUI();
-
-    // 7. Iniciar render loop
+    this.setupUI();
     this.world.start();
 
-    // Mensaje de bienvenida inicial
+    // Mensaje de bienvenida inicial diferido para carga de assets
     setTimeout(() => {
       this.progressSystem.showToast(
-        '¡Bienvenido a VirtuXperience!',
-        'Usa WASD o las teclas 1-6 para explorar los 6 Domos del Saber.',
+        'VirtuXperience Iniciado',
+        'Usa WASD o los atajos numéricos 1-6 para explorar los domos temáticos.',
         'achievement'
       );
-      this.duaSystem.speak('Bienvenido al campus inmersivo de UNIMINUTO VirtuXperience. Explora los seis domos del saber y demuestra tus competencias.');
-    }, 1000);
+    }, 800);
   }
 
   handleObjectInteraction(userData) {
     if (!userData) return;
 
     if (userData.type === 'agora') {
-      // Pedestal del Nexo Central -> Abre el Árbol de Competencias
-      const compModal = document.getElementById('modal-competencies');
-      if (compModal) {
-        compModal.classList.remove('hidden');
-        this.progressSystem.drawRadarChart();
-      }
+      this.openModal('modal-competencies', () => this.progressSystem.drawRadarChart());
     } else if (userData.type === 'dome' && userData.lineData) {
-      // Pedestal del Domo Temático -> Abre la estación correspondiente
       this.narrativeEngine.openStation(userData.lineData);
     }
   }
 
-  handleZoneChange(domeIdx, loc) {
+  handleZoneChange(domeIdx) {
     this.audioSystem.playTeleport();
 
-    // Actualizar botones de selector superior activo
     const quickBtns = document.querySelectorAll('.dome-quick-btn');
     quickBtns.forEach((btn) => {
-      const idx = parseInt(btn.getAttribute('data-dome'));
-      if (idx === domeIdx) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
+      const idx = Number(btn.getAttribute('data-dome'));
+      btn.classList.toggle('active', idx === domeIdx);
     });
 
-    // Otorgar XP de exploración si es primera visita
     if (domeIdx > 0) {
-      const line = TRANSVERSAL_LINES.find(l => l.id === domeIdx);
+      const line = TRANSVERSAL_LINES.find((l) => l.id === domeIdx);
       if (line) {
-        this.progressSystem.awardXP(25, `Exploración del Domo ${line.title}`);
+        this.progressSystem.awardXP(25, `Exploración: Domo ${line.title}`);
         this.progressSystem.completeQuest(`q${domeIdx}`);
       }
     }
   }
 
-  setupGlobalUI() {
-    // Cerrar cualquier modal al hacer clic en botones con data-close
+  openModal(modalId, onOpen) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    if (typeof onOpen === 'function') onOpen();
+  }
+
+  closeAllModals() {
+    document.querySelectorAll('.modal-overlay:not(.hidden)').forEach((m) => {
+      m.classList.add('hidden');
+    });
+    this.duaSystem.stopSpeaking();
+  }
+
+  setupUI() {
+    // Manejo unificado de cierre por atributo data-close
     document.querySelectorAll('[data-close]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const modalId = btn.getAttribute('data-close');
@@ -117,51 +108,32 @@ class App {
       });
     });
 
-    // Cerrar modal con tecla Escape
+    // Atajos de teclado para modales globales
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay:not(.hidden)').forEach((m) => {
-          m.classList.add('hidden');
-        });
-        this.duaSystem.stopSpeaking();
+        this.closeAllModals();
       } else if (e.key === 'm' || e.key === 'M') {
         const compModal = document.getElementById('modal-competencies');
         if (compModal) {
-          compModal.classList.toggle('hidden');
-          if (!compModal.classList.contains('hidden')) {
+          const isHidden = compModal.classList.toggle('hidden');
+          if (!isHidden) {
             this.progressSystem.drawRadarChart();
           }
         }
       }
     });
 
-    // Botones del HUD superior
-    const btnComp = document.getElementById('btn-open-competencies');
-    if (btnComp) {
-      btnComp.addEventListener('click', () => {
-        const m = document.getElementById('modal-competencies');
-        if (m) {
-          m.classList.remove('hidden');
-          this.progressSystem.drawRadarChart();
-        }
-      });
-    }
+    // Botones del HUD
+    const hudBindings = [
+      { id: 'btn-open-competencies', action: () => this.openModal('modal-competencies', () => this.progressSystem.drawRadarChart()) },
+      { id: 'btn-open-ai', action: () => this.openModal('modal-ai') },
+      { id: 'btn-accessibility', action: () => this.openModal('modal-accessibility') }
+    ];
 
-    const btnAI = document.getElementById('btn-open-ai');
-    if (btnAI) {
-      btnAI.addEventListener('click', () => {
-        const m = document.getElementById('modal-ai');
-        if (m) m.classList.remove('hidden');
-      });
-    }
-
-    const btnAcc = document.getElementById('btn-accessibility');
-    if (btnAcc) {
-      btnAcc.addEventListener('click', () => {
-        const m = document.getElementById('modal-accessibility');
-        if (m) m.classList.remove('hidden');
-      });
-    }
+    hudBindings.forEach(({ id, action }) => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('click', action);
+    });
 
     const btnSound = document.getElementById('btn-toggle-sound');
     if (btnSound) {
@@ -172,42 +144,36 @@ class App {
       });
     }
 
-    // Botones de selector superior de domos (0 al 6)
+    // Botones de teletransporte rápido a los domos (0 al 6)
     document.querySelectorAll('.dome-quick-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const domeIdx = parseInt(btn.getAttribute('data-dome'));
+        const domeIdx = Number(btn.getAttribute('data-dome'));
         this.controls.teleportTo(domeIdx);
       });
     });
 
-    // Minimizar / maximizar quest tracker
-    const btnMinQuests = document.getElementById('btn-minimize-quests');
-    const questTracker = document.querySelector('.hud-quest-tracker');
-    if (btnMinQuests && questTracker) {
-      btnMinQuests.addEventListener('click', () => {
-        questTracker.classList.toggle('minimized');
-        btnMinQuests.textContent = questTracker.classList.contains('minimized') ? '+' : '_';
-      });
-    }
+    // Colapso de paneles secundarios
+    const setupCollapsible = (btnId, panelSelector) => {
+      const btn = document.getElementById(btnId);
+      const panel = document.querySelector(panelSelector);
+      if (btn && panel) {
+        btn.addEventListener('click', () => {
+          const isMinimized = panel.classList.toggle('minimized');
+          btn.textContent = isMinimized ? '+' : '_';
+        });
+      }
+    };
 
-    // Minimizar / maximizar minimapa
-    const btnMinMap = document.getElementById('btn-minimize-minimap');
-    const minimapPanel = document.querySelector('.hud-minimap-panel');
-    if (btnMinMap && minimapPanel) {
-      btnMinMap.addEventListener('click', () => {
-        minimapPanel.classList.toggle('minimized');
-        btnMinMap.textContent = minimapPanel.classList.contains('minimized') ? '+' : '_';
-      });
-    }
+    setupCollapsible('btn-minimize-quests', '.hud-quest-tracker');
+    setupCollapsible('btn-minimize-minimap', '.hud-minimap-panel');
 
-    // Iniciar sonido ambiental al primer clic en la pantalla (política de navegadores)
+    // Desbloqueo de AudioContext tras la primera interacción requerida por el navegador
     window.addEventListener('click', () => {
       this.audioSystem.startAmbientDrone();
     }, { once: true });
   }
 }
 
-// Arrancar aplicación al cargar el DOM
 window.addEventListener('DOMContentLoaded', () => {
   new App();
 });

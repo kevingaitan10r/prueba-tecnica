@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
 
 export default defineConfig({
   root: './',
@@ -10,7 +9,7 @@ export default defineConfig({
     sourcemap: false
   },
   server: {
-    port: 5173,
+    port: 5174,
     open: false,
     host: true
   }

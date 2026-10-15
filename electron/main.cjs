@@ -24,7 +24,8 @@ function createWindow() {
   const isDev = process.env.ELECTRON_DEV === 'true';
 
   if (isDev) {
-    win.loadURL('http://localhost:5173');
+    const devPort = process.env.PORT || 5174;
+    win.loadURL(`http://localhost:${devPort}`);
   } else {
     win.loadFile(path.join(__dirname, '../dist/index.html'));
   }
