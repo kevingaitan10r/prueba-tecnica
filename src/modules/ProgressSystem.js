@@ -153,6 +153,12 @@ export class ProgressSystem {
       `;
       list.appendChild(item);
     });
+
+    const counter = document.getElementById('quest-counter');
+    if (counter) {
+      const done = this.quests.filter((q) => q.done).length;
+      counter.textContent = `${done}/${this.quests.length}`;
+    }
   }
 
   drawRadarChart() {

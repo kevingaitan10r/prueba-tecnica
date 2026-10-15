@@ -112,7 +112,12 @@ class App {
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         this.closeAllModals();
-      } else if (e.key === 'm' || e.key === 'M') {
+        return;
+      }
+
+      if (isTypingTarget(e.target)) return;
+
+      if (e.code === 'KeyM') {
         const compModal = document.getElementById('modal-competencies');
         if (compModal) {
           const isHidden = compModal.classList.toggle('hidden');
@@ -120,8 +125,12 @@ class App {
             this.progressSystem.drawRadarChart();
           }
         }
+      } else if (e.code === 'KeyH') {
+        this.setControlsHintVisible(this.controlsFooter.classList.contains('hints-hidden'));
       }
     });
+
+    this.setupControlsHint();
 
     // Botones del HUD
     const hudBindings = [
@@ -172,6 +181,50 @@ class App {
       this.audioSystem.startAmbientDrone();
     }, { once: true });
   }
+
+  setupControlsHint() {
+    this.controlsFooter = document.querySelector('.hud-bottom-controls');
+    this.controlsReopenBtn = document.getElementById('btn-show-controls');
+    if (!this.controlsFooter) return;
+
+    this.controlsReopenBtn?.addEventListener('click', () => this.setControlsHintVisible(true));
+
+    // Quien ya ocultó los atajos antes no necesita verlos otra vez
+    if (localStorage.getItem(HINTS_STORAGE_KEY) === 'hidden') {
+      this.setControlsHintVisible(false, false);
+      return;
+    }
+
+    // Se ocultan solos al empezar a moverse o después de 8 segundos
+    const autoHide = () => {
+      clearTimeout(timer);
+      window.removeEventListener('keydown', onFirstMove);
+      this.setControlsHintVisible(false, false);
+    };
+    const onFirstMove = (e) => {
+      if (MOVEMENT_KEYS.has(e.code) && !isTypingTarget(e.target)) {
+        setTimeout(autoHide, 1500);
+        window.removeEventListener('keydown', onFirstMove);
+      }
+    };
+    const timer = setTimeout(autoHide, 8000);
+    window.addEventListener('keydown', onFirstMove);
+  }
+
+  setControlsHintVisible(visible, remember = true) {
+    this.controlsFooter.classList.toggle('hints-hidden', !visible);
+    this.controlsReopenBtn?.setAttribute('aria-expanded', String(visible));
+    if (remember) {
+      localStorage.setItem(HINTS_STORAGE_KEY, visible ? 'visible' : 'hidden');
+    }
+  }
+}
+
+const HINTS_STORAGE_KEY = 'virtuxperience_hints';
+const MOVEMENT_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+
+function isTypingTarget(el) {
+  return el instanceof HTMLElement && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
 }
 
 window.addEventListener('DOMContentLoaded', () => {

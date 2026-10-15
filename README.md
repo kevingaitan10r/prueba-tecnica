@@ -142,6 +142,7 @@ npm run app
 | **Teclas 0 a 6** | Teletransporte instantáneo directo (acceso universal sin barreras motoras) |
 | **Tecla E** | Interactuar con la estación o pedestal activo |
 | **Tecla M** | Abrir/cerrar matriz curricular y radar de competencias |
+| **Tecla H** | Mostrar/ocultar barra inferior de atajos |
 | **Escape** | Cerrar cualquier ventana modal activa |
 | **Clic en Minimapa** | Navegación por coordenadas del campus |
 
