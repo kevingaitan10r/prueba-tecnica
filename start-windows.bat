@@ -1,7 +1,5 @@
 @echo off
-echo ======================================================================
-echo    UNIMINUTO VirtuXperience 3D - Virtual Experience Engineering SAS   
-echo ======================================================================
+echo === UNIMINUTO VirtuXperience 3D ===
 cd /d %~dp0
 
 if not exist node_modules (
@@ -12,6 +10,6 @@ if not exist node_modules (
 echo Compilando aplicacion...
 call npm run build
 
-echo Lanzando ejecutable...
+echo Iniciando aplicacion...
 call npx electron .
 pause
